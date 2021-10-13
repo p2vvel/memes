@@ -26,6 +26,7 @@ class MyUserManager(BaseUserManager):
         return user
 
 class MyUser(AbstractBaseUser):
+    
     email           = models.CharField(max_length=255, null=False, blank=False, unique=True)
     login           = models.CharField(max_length=60, null=False, blank=False, unique=True)
     karma           = models.IntegerField(verbose_name="Karma points",default=0, null=False)
@@ -54,3 +55,5 @@ class MyUser(AbstractBaseUser):
     @property
     def is_staff(self):
         return self.is_superuser
+
+    verbose_name = "User"

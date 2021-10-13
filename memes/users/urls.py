@@ -15,7 +15,15 @@ Including another URLconf
 """
 from django.http.response import HttpResponse
 from django.urls import path
+from django.urls.conf import include
+from .views import UserProfileView, my_profile, signup_view
+
+# app_name = "users"    #problem with redirections with default auth views when app_name is set
+
 
 urlpatterns = [
-    path("", lambda request: HttpResponse("Hi"), name="index_test")
+    path("signup/", signup_view, name="signup"),
+    path("profile/", my_profile, name="my_profile"),
+    # path("profile/", UserProfileView.as_view(), "user_profile"),
+    path("", include("django.contrib.auth.urls")),
 ]
