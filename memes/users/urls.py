@@ -17,6 +17,7 @@ from django.http.response import HttpResponse
 from django.urls import path
 from django.urls.conf import include
 from .views import UserProfileView, my_profile, signup_view
+from django.contrib.auth import views as auth_views
 
 # app_name = "users"    #problem with redirections with default auth views when app_name is set
 
@@ -24,6 +25,8 @@ from .views import UserProfileView, my_profile, signup_view
 urlpatterns = [
     path("signup/", signup_view, name="signup"),
     path("profile/", my_profile, name="my_profile"),
-    # path("profile/", UserProfileView.as_view(), "user_profile"),
-    path("", include("django.contrib.auth.urls")),
+    path("login/", auth_views.LoginView.as_view(redirect_authenticated_user=True, template_name="users/login.html"), name="login"),
+    path("password_change/", auth_views.PasswordChangeView.as_view(template_name="users/password_change_form.html"), name="password_change"),
+    path("password_change_done/", auth_views.PasswordChangeDoneView.as_view(template_name="users/password_change_done.html"), name="password_change_done"),
+    path("logout/", auth_views.LogoutView.as_view(), name="logout"),
 ]
