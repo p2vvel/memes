@@ -1,6 +1,4 @@
 from django.contrib.auth import get_user, get_user_model
-from django.contrib.auth.models import AnonymousUser
-from django.http import request
 from django.test import TestCase
 from django.urls import reverse
 
@@ -46,7 +44,6 @@ class UserTests(TestCase):
         '''Logged user shouldnt be able to visit login page'''
         self.client.login(email="jerry@example.com", password="1234")
         response = self.client.get(reverse("login"), follow=True)
-        # self.assertRedirects(response, reverse("index"), )
         self.assertRedirects(response, expected_url=reverse("my_profile"))
 
     
