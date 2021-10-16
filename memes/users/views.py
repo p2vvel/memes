@@ -3,7 +3,7 @@ from django.views.generic.detail import DetailView
 from django.contrib.auth import authenticate, get_user_model, login
 from django.contrib.auth.decorators import login_required
 
-from users.forms import MyUserCreationForm
+from users.forms import MyUserCreationForm, MyUserUpdateForm
 # Create your views here.
 
 
@@ -13,12 +13,13 @@ class UserProfileView(DetailView):
     
 @login_required
 def my_profile(request):
-    '''Shows logged logged user profile'''
+    '''Shows logged user profile'''
     user = request.user
     context = {}
     return render(request, "users/user_profile.html", context)
 
 def signup_view(request):
+    '''View for creating new accounts'''
     if request.method == "GET":
         form = MyUserCreationForm()
         return render(request, "users/signup.html", {"form": form})
@@ -31,5 +32,17 @@ def signup_view(request):
             login(request, user)
             return redirect("my_profile")
     return render(request, "users/signup.html", {"form": form})
-        
 
+@login_required()
+def edit_view(request):
+    '''Proile edit view'''
+    if request.method == "POST":
+        form = MyUserUpdateForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect("my_profile")
+    else:
+        form = MyUserUpdateForm(instance=request.user)
+    
+    context = {"form": form}
+    return render(request, "users/user_profile_edit.html", context)

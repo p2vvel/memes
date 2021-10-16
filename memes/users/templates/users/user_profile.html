@@ -10,4 +10,8 @@
 
 <p>{{user.email}}</p>
 
+{% if user.profile_img %}
+    <img src={{user.profile_img.url}} alt="{user.login} profile pic">
+{% endif %}
+
 {% endblock content %}

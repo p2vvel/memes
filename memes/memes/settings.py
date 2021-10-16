@@ -35,6 +35,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     "users",
+    'django.forms', #necessary to enable custom form widgets 
+
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -136,3 +138,9 @@ AUTH_USER_MODEL = 'users.MyUser'
 LOGIN_REDIRECT_URL = "/users/profile/"
 LOGOUT_REDIRECT_URL = "/"
 LOGIN_URL = "/users/login"
+
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'   #necessary to enable custom form widgets

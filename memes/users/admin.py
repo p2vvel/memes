@@ -23,12 +23,12 @@ class MyUserAdmin(UserAdmin):
     readonly_fields = ("password", "date_created", "last_login")
 
     add_fieldsets = (
-                ("Info", {'fields': ('login', 'email')}), 
+                ("Info", {'fields': ('login', 'email', 'profile_img')}), 
                 ("Password", {"fields": ('password1', 'password2')}),
-                ("Status", {'fields': ("is_superuser",)}) )
+                ("Status", {'fields': ("is_superuser",),}) )
     
     fieldsets = (
-                ("Info", {'fields': ('login', 'email',)}),
+                ("Info", {'fields': ('login', 'email', 'profile_img')}),
                 ("Status", {'fields': ('karma', 'is_superuser', 'is_active')}),)
     
     filter_horizontal = ()

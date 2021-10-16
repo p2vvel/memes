@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-
-
+import os
+import uuid
 # Create your models here.
 
 
@@ -25,14 +25,22 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+
+
+def upload_avatar(instance, filename):
+    ext = ext=os.path.splitext(filename)[1]
+    new_filename = uuid.uuid4()
+    return "avatars/{filename}{ext}".format(filename=new_filename, ext=ext)
+
 class MyUser(AbstractBaseUser):
-    
     email           = models.CharField(max_length=255, null=False, blank=False, unique=True)
     login           = models.CharField(max_length=60, null=False, blank=False, unique=True)
     karma           = models.IntegerField(verbose_name="Karma points",default=0, null=False)
     date_created    = models.DateTimeField(verbose_name="Registration date", auto_now_add=True)
     last_login      = models.DateTimeField(auto_now=True)
-    # profile_img     = models.ImageField(default=None) #TODO: later
+    profile_img     = models.ImageField(max_length=255, default=None, upload_to=upload_avatar, blank=True)
+    description     = models.TextField(default="", max_length=1000, null=True, blank=True)
+
 
     USERNAME_FIELD  = 'email'
     EMAIL_FIELD     = 'email'
@@ -56,4 +64,10 @@ class MyUser(AbstractBaseUser):
     def is_staff(self):
         return self.is_superuser
 
-    verbose_name = "User"
+    def delete(self, args, **kwargs):
+        '''Remember about deleting'''
+        try:
+            os.remove(self.profile_img.path)
+        except FileNotFoundError:
+            print("User profile already deleted")
+        super().delete(args, kwargs)

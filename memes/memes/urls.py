@@ -26,3 +26,11 @@ urlpatterns = [
     path("users/", include("users.urls")),
     path('admin/', admin.site.urls),
 ]
+
+
+#django by default doesnt server static files, so during 
+#development its necessary to add extra record to urlpattern
+from .settings import DEBUG, MEDIA_URL, MEDIA_ROOT
+if DEBUG:
+    from django.conf.urls.static import static
+    urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
