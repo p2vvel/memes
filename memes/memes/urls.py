@@ -30,7 +30,8 @@ urlpatterns = [
 
 #django by default doesnt server static files, so during 
 #development its necessary to add extra record to urlpattern
-from .settings import DEBUG, MEDIA_URL, MEDIA_ROOT
-if DEBUG:
+from django.conf import settings
+if settings.DEBUG:
     from django.conf.urls.static import static
-    urlpatterns += static(MEDIA_URL, document_root=MEDIA_ROOT)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
