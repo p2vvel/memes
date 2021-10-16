@@ -62,7 +62,8 @@ class UserTests(TestCase):
         response = self.client.get(reverse("profile_edit"), follow=True)
         self.assertRedirects(response, "{}?next={}".format(reverse("login"), reverse("profile_edit")))
 
-    def test_profile_edit_form(self):
+    def test_profile_edit_form_post(self):
+        '''Does profile edit view works?'''
         self.client.login(email="jerry@example.com", password="1234")
         avatar_path = Path(settings.BASE_DIR.parent, "test_images", "avatar1.png")
         
@@ -72,14 +73,46 @@ class UserTests(TestCase):
                 open(avatar_path, "rb").read()
                 )
 
-        request = self.client.post(reverse("profile_edit"), data={
+        response = self.client.post(reverse("profile_edit"), data={
                 "description": description, 
                 "profile_img": img
                 })
 
         user = get_user(self.client)
+        self.assertRedirects(response, reverse("my_profile"))
         self.assertEqual(user.description, "Glifosat")  #checks description
         self.assertTrue(Path(user.profile_img.path).is_file())  #checks if avatar was saved on disk
         # response = self.client.get(user.profile_img.url)
         # self.assertEqual(response.status_code, 200) #cant test in dev env, because during all tests DEBUG variable is set to False regardless its primary value
         Path(user.profile_img.path).unlink()    #delete saved avatar after tests
+    
+    def test_signup_view_post(self):
+        '''Does signup view works'''
+        login="delilah"
+        email = "delilah@example.com"
+        password="Djangodjango##"
+        data = {"login": login,
+                "email": email, 
+                "password1": password, 
+                "password2": password
+                }
+        response = self.client.post(reverse("signup"), data)
+        self.assertRedirects(response, reverse("my_profile"))
+        self.assertTrue(self.client.login(email=email, password=password))  #user has been created
+
+    def test_password_change_view_post(self):
+        '''Does password change view works?'''
+        email = "jerry@example.com"
+        self.client.login(email=email, password="1234")
+        new_password="Djangodjango##"
+        data = {"old_password": "1234",
+                "new_password1": new_password,
+                "new_password2": new_password
+                }
+        response = self.client.post(reverse("password_change"), data)
+        self.assertRedirects(response, reverse("password_change_done"))
+        self.client.logout()
+        self.assertTrue(self.client.login(email=email, password=new_password))  #test if user can log with new password
+
+    
+        
