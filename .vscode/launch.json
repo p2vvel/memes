@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Django tests",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/memes/manage.py",
+            "args": [
+                "test"
+            ],
+            "django": true,
+            "cwd": "${workspaceFolder}/memes"
+        },
+        {
             "name": "Python: Django",
             "type": "python",
             "request": "launch",
@@ -16,4 +27,3 @@
         }
     ]
 }
-
