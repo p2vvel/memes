@@ -3,7 +3,7 @@ from django.shortcuts import redirect, render
 from django.urls.base import reverse
 from django.views.generic.detail import DetailView
 from django.contrib.auth import authenticate, get_user, get_user_model, login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from users.forms import MyUserCreationForm, MyUserUpdateForm
 # Create your views here.
@@ -24,6 +24,11 @@ def my_profile(request):
     context = {}
     return render(request, "users/user_profile.html", context)
 
+
+
+
+#signed in users wont see sign up view
+@user_passes_test(lambda user: user.is_anonymous, redirect_field_name="index")
 def signup_view(request):
     '''View for creating new accounts'''
     if request.method == "GET":

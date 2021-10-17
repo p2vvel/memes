@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user, get_user_model
-from django.http import response
+from django.db.models import base
 from django.test import TestCase
 from django.urls import reverse
 from django.conf import settings
@@ -10,12 +10,16 @@ from django.core.files import File
 
 from pathlib import Path
 
-class UserTests(TestCase):
-    def setUp(self):
-        user_model = get_user_model()
-        new_user = user_model(login="jerry", email="jerry@example.com")
-        new_user.set_password("1234")
-        new_user.save()
+
+def base_setUp(self):
+    user_model = get_user_model()
+    new_user = user_model(login="jerry", email="jerry@example.com")
+    new_user.set_password("1234")
+    new_user.save()
+
+
+class LoginLogoutTests(TestCase):
+    setUp = base_setUp
 
     def test_login(self):
         '''Is login system working?'''
@@ -25,6 +29,13 @@ class UserTests(TestCase):
         '''Does login view work'''
         response = self.client.get(reverse("login"))
         self.assertEqual(response.status_code, 200)
+ 
+    def test_login_redirect(self):
+        '''Logged user shouldnt be able to visit login page'''
+        self.client.login(email="jerry@example.com", password="1234")
+        response = self.client.get(reverse("login"), follow=True)
+        user = get_user(self.client)
+        self.assertRedirects(response, expected_url=reverse("index"))
 
     def test_logout(self):
         '''Does logging out works?'''
@@ -33,6 +44,10 @@ class UserTests(TestCase):
         user = get_user(self.client)
         self.assertRedirects(response, reverse("index"))    #checks redirect after logout
         self.assertFalse(user.is_authenticated)
+
+
+class PasswordChangeTests(TestCase):
+    setUp = base_setUp
 
     def test_password_change_view_anonymous(self):
         '''Is password change view visible for logged user?'''
@@ -45,12 +60,24 @@ class UserTests(TestCase):
         response = self.client.get(reverse("password_change"))
         self.assertEqual(response.status_code, 200)
 
-    def test_login_redirect(self):
-        '''Logged user shouldnt be able to visit login page'''
-        self.client.login(email="jerry@example.com", password="1234")
-        response = self.client.get(reverse("login"), follow=True)
-        user = get_user(self.client)
-        self.assertRedirects(response, expected_url=reverse("index"))
+    def test_password_change_view_post(self):
+        '''Does password change view works?'''
+        email = "jerry@example.com"
+        self.client.login(email=email, password="1234")
+        new_password="Djangodjango##"
+        data = {"old_password": "1234",
+                "new_password1": new_password,
+                "new_password2": new_password
+                }
+        response = self.client.post(reverse("password_change"), data)
+        self.assertRedirects(response, reverse("password_change_done"))
+        self.client.logout()
+        self.assertTrue(self.client.login(email=email, password=new_password))  #test if user can log with new password
+    
+    
+
+class ProfileEditTests(TestCase):
+    setUp = base_setUp
 
     def test_profile_edit_view(self):
         '''Does logged user see edit profile page?'''
@@ -87,6 +114,19 @@ class UserTests(TestCase):
         # self.assertEqual(response.status_code, 200) #cant test in dev env, because during all tests DEBUG variable is set to False regardless its primary value
         Path(user.profile_img.path).unlink()    #delete saved avatar after tests
     
+
+class SignUpTest(TestCase):
+    setUp = base_setUp
+
+    def test_signup_view_anonymous(self):
+        response = self.client.get(reverse("signup"))
+        self.assertEqual(response.status_code, 200)
+    
+    def test_signup_view_logged_user(self):
+        self.client.login(email="jerry@example.com", password="1234")
+        response = self.client.get(reverse("signup"), follow=True)
+        self.assertRedirects(response, reverse("index"))
+
     def test_signup_view_post(self):
         '''Does signup view works'''
         login="delilah"
@@ -102,21 +142,7 @@ class UserTests(TestCase):
         self.assertRedirects(response, reverse("profile", args=(user.login,)))
         self.assertTrue(self.client.login(email=email, password=password))  #user has been created
 
-    def test_password_change_view_post(self):
-        '''Does password change view works?'''
-        email = "jerry@example.com"
-        self.client.login(email=email, password="1234")
-        new_password="Djangodjango##"
-        data = {"old_password": "1234",
-                "new_password1": new_password,
-                "new_password2": new_password
-                }
-        response = self.client.post(reverse("password_change"), data)
-        self.assertRedirects(response, reverse("password_change_done"))
-        self.client.logout()
-        self.assertTrue(self.client.login(email=email, password=new_password))  #test if user can log with new password
-    
-    
+
 
     
         
