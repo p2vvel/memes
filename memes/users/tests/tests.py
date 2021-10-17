@@ -30,6 +30,14 @@ class LoginLogoutTests(TestCase):
         response = self.client.get(reverse("login"))
         self.assertEqual(response.status_code, 200)
  
+    def test_login_form_post(self):
+        '''Does loggin actually work for user using post request?'''
+        data = {"username": "jerry@example.com", "password": "1234"}
+        response = self.client.post(reverse("login"), data, follow=True)
+        user = get_user(self.client)
+        self.assertTrue(user.is_authenticated)
+        self.assertRedirects(response, reverse("index"))
+
     def test_login_redirect(self):
         '''Logged user shouldnt be able to visit login page'''
         self.client.login(email="jerry@example.com", password="1234")
@@ -44,6 +52,7 @@ class LoginLogoutTests(TestCase):
         user = get_user(self.client)
         self.assertRedirects(response, reverse("index"))    #checks redirect after logout
         self.assertFalse(user.is_authenticated)
+
 
 
 class PasswordChangeTests(TestCase):
@@ -108,7 +117,7 @@ class ProfileEditTests(TestCase):
 
         user = get_user(self.client)
         self.assertRedirects(response, reverse("profile", args=(user.login,)))
-        self.assertEqual(user.description, "Glifosat")  #checks description
+        self.assertEqual(user.description, description)  #checks description
         self.assertTrue(Path(user.profile_img.path).is_file())  #checks if avatar was saved on disk
         # response = self.client.get(user.profile_img.url)
         # self.assertEqual(response.status_code, 200) #cant test in dev env, because during all tests DEBUG variable is set to False regardless its primary value
