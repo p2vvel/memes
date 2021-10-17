@@ -49,7 +49,8 @@ class UserTests(TestCase):
         '''Logged user shouldnt be able to visit login page'''
         self.client.login(email="jerry@example.com", password="1234")
         response = self.client.get(reverse("login"), follow=True)
-        self.assertRedirects(response, expected_url=reverse("my_profile"))
+        user = get_user(self.client)
+        self.assertRedirects(response, expected_url=reverse("index"))
 
     def test_profile_edit_view(self):
         '''Does logged user see edit profile page?'''
@@ -79,7 +80,7 @@ class UserTests(TestCase):
                 })
 
         user = get_user(self.client)
-        self.assertRedirects(response, reverse("my_profile"))
+        self.assertRedirects(response, reverse("profile", args=(user.login,)))
         self.assertEqual(user.description, "Glifosat")  #checks description
         self.assertTrue(Path(user.profile_img.path).is_file())  #checks if avatar was saved on disk
         # response = self.client.get(user.profile_img.url)
@@ -97,7 +98,8 @@ class UserTests(TestCase):
                 "password2": password
                 }
         response = self.client.post(reverse("signup"), data)
-        self.assertRedirects(response, reverse("my_profile"))
+        user = get_user(self.client)
+        self.assertRedirects(response, reverse("profile", args=(user.login,)))
         self.assertTrue(self.client.login(email=email, password=password))  #user has been created
 
     def test_password_change_view_post(self):
@@ -113,6 +115,8 @@ class UserTests(TestCase):
         self.assertRedirects(response, reverse("password_change_done"))
         self.client.logout()
         self.assertTrue(self.client.login(email=email, password=new_password))  #test if user can log with new password
+    
+    
 
     
         

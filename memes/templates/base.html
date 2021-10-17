@@ -34,7 +34,7 @@
 						{{user.login}}
 					</a>
 					<ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-						<li><a class="dropdown-item" href={% url "my_profile" %} >Profile</a></li>
+						<li><a class="dropdown-item" href={% url "profile" login=request.user.login %} >Profile</a></li>
 						<li><a class="dropdown-item" href={% url "profile_edit" %} >Profile edit</a></li>
 						<li><a class="dropdown-item" href={% url "password_change" %} >Password change</a></li>
 						<li><a class="dropdown-item" href={% url "logout" %} >Logout</a></li>

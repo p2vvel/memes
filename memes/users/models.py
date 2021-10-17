@@ -1,7 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 import os
 import uuid
+
 # Create your models here.
 
 
@@ -71,3 +73,9 @@ class MyUser(AbstractBaseUser):
         except FileNotFoundError:
             print("User profile already deleted")
         super().delete(args, kwargs)
+
+
+class Karma(models.Model):
+    created     = models.DateTimeField(auto_created=True)
+    sender      = models.ForeignKey(to=get_user_model(), null=False, blank=False, on_delete=models.CASCADE, related_name="sender")
+    recipient   = models.ForeignKey(to=get_user_model(), null=False, blank=False, on_delete=models.CASCADE, related_name="recipient")

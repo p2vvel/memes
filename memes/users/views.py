@@ -1,6 +1,8 @@
+from logging import log
 from django.shortcuts import redirect, render
+from django.urls.base import reverse
 from django.views.generic.detail import DetailView
-from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import authenticate, get_user, get_user_model, login
 from django.contrib.auth.decorators import login_required
 
 from users.forms import MyUserCreationForm, MyUserUpdateForm
@@ -8,8 +10,12 @@ from users.forms import MyUserCreationForm, MyUserUpdateForm
 
 
 class UserProfileView(DetailView):
-    template_name = "users/user_profile.html"
-    model = get_user_model()
+    template_name       = "users/user_profile.html"
+    model               = get_user_model()
+    context_object_name = "profile"
+    slug_field          = "login"
+    slug_url_kwarg      = "login"
+
     
 @login_required
 def my_profile(request):
@@ -30,7 +36,7 @@ def signup_view(request):
             data = form.cleaned_data
             user = authenticate(email = data["email"], password=data["password1"])    #there are password1 and password2, theyre the same if validation is ok
             login(request, user)
-            return redirect("my_profile")
+            return redirect(reverse("profile", args=(user.login,)))
     return render(request, "users/signup.html", {"form": form})
 
 @login_required()
@@ -40,9 +46,11 @@ def edit_view(request):
         form = MyUserUpdateForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
-            return redirect("my_profile")
+            user = get_user(request)
+            return redirect(reverse("profile", args=(user.login,)))
     else:
         form = MyUserUpdateForm(instance=request.user)
     
     context = {"form": form}
     return render(request, "users/user_profile_edit.html", context)
+
