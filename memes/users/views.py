@@ -4,8 +4,11 @@ from django.urls.base import reverse
 from django.views.generic.detail import DetailView
 from django.contrib.auth import authenticate, get_user, get_user_model, login
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import get_object_or_404
+from django.http import Http404
 
 from users.forms import MyUserCreationForm, MyUserUpdateForm
+from .models import Karma
 # Create your views here.
 
 
@@ -58,4 +61,34 @@ def edit_view(request):
     
     context = {"form": form}
     return render(request, "users/user_profile_edit.html", context)
+
+
+def user_karma_change(request, login):
+    if request.user.is_authenticated:
+        MyUserModel = get_user_model()
+        sender = get_user(request)
+        #workaround, because "uncaught" exception made testing harder
+    
+        recipient = get_object_or_404(klass=MyUserModel, login=login)
+
+        #NO CHEATING
+        #TODO: give some information after such incident
+        if recipient == sender:
+            return redirect("index")
+
+        try:
+            given_karma = Karma.objects.get(sender=sender, recipient=recipient) #recipient was previously given karma point by sender
+            given_karma.delete()
+            recipient.karma -= 1
+            recipient.save()
+        except Karma.DoesNotExist:
+            #recipient wasnt given karma point by sender
+            karma = Karma(sender=sender, recipient=recipient)
+            karma.save()
+            recipient.karma += 1
+            recipient.save()
+        
+        return redirect(reverse("profile", args=(recipient.login,)))
+    else:
+        return redirect("index")
 

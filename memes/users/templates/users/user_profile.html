@@ -14,4 +14,9 @@
     <img src={{user.profile_img.url}} alt="{user.login} profile pic">
 {% endif %}
 
+{% if request.user.is_authenticated %}
+    <a href={<button 
+{% endif %}
+
+
 {% endblock content %}

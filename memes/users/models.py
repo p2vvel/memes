@@ -76,6 +76,6 @@ class MyUser(AbstractBaseUser):
 
 
 class Karma(models.Model):
-    created     = models.DateTimeField(auto_created=True)
-    sender      = models.ForeignKey(to=get_user_model(), null=False, blank=False, on_delete=models.CASCADE, related_name="sender")
-    recipient   = models.ForeignKey(to=get_user_model(), null=False, blank=False, on_delete=models.CASCADE, related_name="recipient")
+    date_created    = models.DateTimeField(auto_now_add=True)
+    sender          = models.ForeignKey(to=get_user_model(), null=False, blank=False, on_delete=models.CASCADE, related_name="sender")
+    recipient       = models.ForeignKey(to=get_user_model(), null=False, blank=False, on_delete=models.CASCADE, related_name="recipient")

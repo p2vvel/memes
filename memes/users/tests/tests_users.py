@@ -152,6 +152,35 @@ class SignUpTest(TestCase):
         self.assertTrue(self.client.login(email=email, password=password))  #user has been created
 
 
+class TestProfilePage(TestCase):
+    def setUp(self) -> None:
+        user_model = get_user_model()
+        jerry = user_model(login="jerry", email="jerry@example.com")
+        jerry.set_password("1234")
+        jerry.save()
+        delilah = user_model(login="delilah", email="delilah@example.com")
+        delilah.set_password("1234")
+        delilah.save()
 
+    def test_profile_page(self):
+        '''Does people see profile pages?'''
+        jerry = get_user_model().objects.get(login="jerry")
+        delilah = get_user_model().objects.get(login="delilah")
+        self.client.login(email="jerry@example.com", password="1234")
+        response = self.client.get(reverse("profile", args=(jerry.login, )))
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse("profile", args=(delilah.login, )))
+        self.assertEqual(response.status_code, 200)
+        
+    def test_profile_anonymous(self):
+        '''Anonymous user should be able to visit profile too'''
+        jerry = get_user_model().objects.get(login="jerry")
+        response = self.client.get(reverse("profile", args=(jerry.login,)), follow=True)
+        self.assertEqual(response.status_code, 200)
     
+    def test_profile_404(self):
+        '''Not existing users profile should raise 404'''
+        self.client.login(email="jerry@example.com", password="1234")        
+        response = self.client.get(reverse("profile", args=("jules",)))
+        self.assertEqual(response.status_code, 404)
         
