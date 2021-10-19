@@ -1,14 +1,9 @@
-from django.contrib.auth import get_user, get_user_model
-from django.db.models import base
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
-from django.conf import settings
-from django.core.files.uploadedfile import SimpleUploadedFile
 
-from django.core.files import File
 # Create your tests here.
 
-from pathlib import Path
 
 
 class TestKarmaSystem(TestCase):

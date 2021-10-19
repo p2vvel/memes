@@ -6,16 +6,23 @@
 
 <h3>Your profile</h3>
 
-<p>{{user.login}}</p>
+<p>{{profile.login}}</p>
 
-<p>{{user.email}}</p>
+<p>{{profile.email}}</p>
+<p>{{profile.karma}}</p>
 
-{% if user.profile_img %}
-    <img src={{user.profile_img.url}} alt="{user.login} profile pic">
+<p>{{profile.description}}</p>
+
+{% if profile.profile_img %}
+    <img src={{profile.profile_img.url}} alt="{{profile.login}} profile pic">
 {% endif %}
 
-{% if request.user.is_authenticated %}
-    <a href={<button 
+{% if user.is_authenticated %}
+{% if profile.pk != user.pk %}
+    <a href={% url "karma_change" login=profile.login %}>
+        <button>Karma</button>
+    </a>
+{% endif %}
 {% endif %}
 
 
