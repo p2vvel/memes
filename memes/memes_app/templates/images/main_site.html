@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<h1>Main site</h1>
+
+<form method="POST" action="{% url "meme_add" %}">
+    {% csrf_token %}
+    {{form.as_p}}
+    <input type="submit" value="Add meme">
+</form>
+
+
+{% for m in memes %}
+    <div class="meme">
+        <h3>{{m.title}}</h3>
+        <img src="{{{m.original_img.url}}" alt="Meme img">
+        <p>{{img.description}}</p>
+    </div>
+{% endfor %}
+
+
+{% endblock content %}

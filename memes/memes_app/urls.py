@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http.response import HttpResponse
 from django.urls import path
 from django.urls.conf import include
 
@@ -22,17 +23,5 @@ from django.shortcuts import render
 
 
 urlpatterns = [
-    path("", include("memes_app.urls")),
-    path("users/", include("users.urls")),
-    path('admin/', admin.site.urls),
-    # path("", lambda request: render(resquest, "index.html"), name="index"),
+    path('', lambda request: HttpResponse("Hemlo"), name="index" ),
 ]
-
-
-#django by default doesnt server static files, so during 
-#development its necessary to add extra record to urlpattern
-from django.conf import settings
-if settings.DEBUG:
-    from django.conf.urls.static import static
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
