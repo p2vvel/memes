@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 
 # Create your models here.
@@ -21,3 +22,4 @@ class Meme(models.Model):
     data_accepted   = models.DateTimeField(blank=True, null=True)
     original_image  = models.ImageField(max_length=255, blank=False, null=False, upload_to=upload_meme)
 
+    original_poster = models.ForeignKey(name="OP", model=get_user_model())

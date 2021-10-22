@@ -14,8 +14,8 @@
 {% for m in memes %}
     <div class="meme">
         <h3>{{m.title}}</h3>
-        <img src="{{{m.original_img.url}}" alt="Meme img">
-        <p>{{img.description}}</p>
+        <img src={{m.original_image}} alt="Meme img">
+        <p>{{m.description}}</p>
     </div>
 {% endfor %}
 
