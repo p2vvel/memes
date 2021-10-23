@@ -22,4 +22,4 @@ class Meme(models.Model):
     data_accepted   = models.DateTimeField(blank=True, null=True)
     original_image  = models.ImageField(max_length=255, blank=False, null=False, upload_to=upload_meme)
 
-    original_poster = models.ForeignKey(name="OP", model=get_user_model())
+    original_poster = models.ForeignKey(to=get_user_model(), default=None, null=True, on_delete=models.SET_NULL)

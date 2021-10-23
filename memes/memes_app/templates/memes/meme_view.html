@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+
+
+<div class="meme">
+    <h3>{{meme.title}}</h3>
+    <img src={{meme.original_image.url}} alt="Meme img">
+    <p>{{meme.description}}</p>
+</div>
+
+
+
+{% endblock content %}
+
+

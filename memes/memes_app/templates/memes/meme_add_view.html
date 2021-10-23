@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<h3>Add meme</h3>
+
+<form method="POST" action={% url "meme_add" %} enctype="multipart/form-data">
+    {% csrf_token %}
+    {{form.as_p}}
+    <input type="submit" value="Add meme">
+</form>
+
+{% endblock content %}
+
+

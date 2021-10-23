@@ -21,11 +21,13 @@ from django.urls.conf import include
 
 from django.shortcuts import render
 
-from .views import main_view, meme_add
+from .models import Meme
+
+from .views import MainView, MemeView, MemeAdd
 
 
 urlpatterns = [
-    # path('', lambda request: HttpResponse("Hemlo"), name="index" ),
-    path("", main_view.as_view(), name="index"),
-    path("meme_add/", meme_add, name="meme_add"),
+    path("", MainView.as_view(), name="index"),
+    path("meme_add/", MemeAdd.as_view(), name="meme_add"),
+    path("meme/<int:pk>", MemeView.as_view(), name="meme_view")
 ]
