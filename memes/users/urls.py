@@ -23,7 +23,7 @@ urlpatterns = [
     path("signup/", signup_view, name="signup"),
     # path("profile/", my_profile, name="my_profile"),
     path("profile/<slug:login>/", UserProfileView.as_view(), name="profile"),
-    path("profile/<slug:login>/karma/", user_karma_change, name="karma_change"),
+    path("profile/<slug:login>/karma/", user_karma_change, name="user_karma_change"),
 
     path("profile_edit/", edit_view, name="profile_edit"),
     path("login/", auth_views.LoginView.as_view(redirect_authenticated_user=True, template_name="users/login.html"), name="login"),

@@ -1,15 +1,17 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
 
 from .forms import MemeForm
 
-from .models import Meme
+from .models import Meme, MemeKarma
 from django.contrib.auth import get_user, login
 from django.contrib.auth.decorators import login_required
 
 from django.views.generic import View
 
 from django.utils.decorators import method_decorator
+
+from django.urls.base import reverse
 
 # Create your views here.
 
@@ -48,6 +50,25 @@ class MemeView(DetailView):
     model = Meme
     context_object_name = "meme"
     template_name = "memes/meme_view.html"
-    
 
 
+
+def karma_change(request, pk):
+    if request.user.is_authenticated:
+        user = get_user(request)
+        meme = get_object_or_404(Meme, pk=pk)
+
+        try:
+            given_karma = MemeKarma.objects.get(user=user, meme=meme)
+            given_karma.delete()
+            meme.karma -= 1   
+            meme.save()
+        except MemeKarma.DoesNotExist:
+            #meme wasnt given karma point by user
+            given_karma = MemeKarma(user=user, meme=meme)
+            given_karma.save()
+            meme.karma += 1
+            meme.save()
+        return redirect(reverse("meme_view", args=(meme.pk,)))
+    else:
+        return redirect(reverse("index"))

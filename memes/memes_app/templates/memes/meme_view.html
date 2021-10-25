@@ -10,6 +10,10 @@
     <h3>{{meme.title}}</h3>
     <img src={{meme.original_image.url}} alt="Meme img">
     <p>{{meme.description}}</p>
+    <p>Karma: {{meme.karma}} </p>
+    {% if user.is_authenticated %}
+        <a href={% url "meme_karma_change" pk=meme.pk %}><button>+</button></a>
+    {% endif %}
 </div>
 
 

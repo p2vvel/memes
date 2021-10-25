@@ -19,7 +19,7 @@
 
 {% if user.is_authenticated %}
 {% if profile.pk != user.pk %}
-    <a href={% url "karma_change" login=profile.login %}>
+    <a href={% url "user_karma_change" login=profile.login %}>
         <button>Karma</button>
     </a>
 {% endif %}

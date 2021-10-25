@@ -21,7 +21,7 @@ class TestKarmaSystem(TestCase):
         '''Anonymous user should be redirected to index page'''
         # self.client.login(email="jerry@example.com", password="1234")
         jerry = get_user_model().objects.get(email="jerry@example.com")
-        response = self.client.get(reverse("karma_change", args=(jerry.login,)), follow=True)
+        response = self.client.get(reverse("user_karma_change", args=(jerry.login,)), follow=True)
         self.assertRedirects(response, reverse("index"))
 
     def test_karma_change(self):
@@ -32,7 +32,7 @@ class TestKarmaSystem(TestCase):
         self.assertEqual(jerry.karma, 0)
         self.assertEqual(delilah.karma, 0)
         for k in [1, 0, 1, 0]:
-            response = self.client.get(reverse("karma_change", args=(delilah.login,)), follow=True)
+            response = self.client.get(reverse("user_karma_change", args=(delilah.login,)), follow=True)
             self.assertRedirects(response, reverse("profile", args=(delilah.login,)))
             delilah.refresh_from_db()
             self.assertEqual(delilah.karma, k)
@@ -47,14 +47,14 @@ class TestKarmaSystem(TestCase):
         delilah.save()
         for x, y in zip([1, 0, 1, 0], [1, 0, 1, 0]):
             self.client.login(email="jerry@example.com", password="1234")
-            response = self.client.get(reverse("karma_change", args=(delilah.login,)), follow=True)
+            response = self.client.get(reverse("user_karma_change", args=(delilah.login,)), follow=True)
             self.assertRedirects(response, reverse("profile", args=(delilah.login,)))
             delilah.refresh_from_db()
             self.assertEqual(delilah.karma, x)
             self.client.logout()
 
             self.client.login(email="delilah@example.com", password="1234")
-            response = self.client.get(reverse("karma_change", args=(jerry.login,)), follow=True)
+            response = self.client.get(reverse("user_karma_change", args=(jerry.login,)), follow=True)
             self.assertRedirects(response, reverse("profile", args=(jerry.login,)))
             jerry.refresh_from_db()
             self.assertEqual(jerry.karma, y)
@@ -64,7 +64,7 @@ class TestKarmaSystem(TestCase):
         '''User shouldnt be able to give karma itself'''
         jerry = get_user_model().objects.get(login="jerry")
         self.client.login(email="jerry@example.com", password="1234")
-        response = self.client.get(reverse("karma_change", args=(jerry.login,)), follow=True)
+        response = self.client.get(reverse("user_karma_change", args=(jerry.login,)), follow=True)
         self.assertRedirects(response, reverse("index"))
         jerry.refresh_from_db()
         self.assertEqual(jerry.karma, 0)
@@ -72,5 +72,5 @@ class TestKarmaSystem(TestCase):
     def test_karma_404(self):
         '''No karma for not existing user'''
         self.client.login(email="jerry@example.com", password="1234")
-        response = self.client.get(reverse("karma_change", args=("jules", )))
+        response = self.client.get(reverse("user_karma_change", args=("jules", )))
         self.assertEqual(response.status_code, 404)

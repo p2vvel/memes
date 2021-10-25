@@ -23,3 +23,9 @@ class Meme(models.Model):
     original_image  = models.ImageField(max_length=255, blank=False, null=False, upload_to=upload_meme)
 
     original_poster = models.ForeignKey(to=get_user_model(), default=None, null=True, on_delete=models.SET_NULL)
+
+
+class MemeKarma(models.Model):
+    date_created    = models.DateTimeField(auto_now_add=True)
+    meme            = models.ForeignKey(to=Meme, on_delete=models.CASCADE, null=False)
+    user            = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
