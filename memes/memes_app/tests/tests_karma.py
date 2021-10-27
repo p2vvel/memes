@@ -21,7 +21,7 @@ class TestMemeView(TestCase):
         for k in image_paths:
             title = k.stem
             description = k.stem + "meme"
-            original_image = SimpleUploadedFile(k.stem, open(k, "rb").read())
+            original_image = SimpleUploadedFile(k.name, open(k, "rb").read())
             new_meme = Meme(title=title, description=description, original_image=original_image, original_poster=new_user)
             new_meme.save()
     

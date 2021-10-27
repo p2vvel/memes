@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('hidden', models.BooleanField(blank=True, default=False)),
                 ('accepted', models.BooleanField(blank=True, default=False)),
                 ('data_accepted', models.DateTimeField(blank=True, null=True)),
-                ('original_image', models.ImageField(max_length=255, upload_to=memes_app.models.upload_meme)),
+                ('original_image', models.ImageField(max_length=255, upload_to=memes_app.models.upload_meme_original)),
             ],
         ),
     ]

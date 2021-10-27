@@ -17,16 +17,28 @@ from django.urls.base import reverse
 
 
 #main site with accepted memes
-class MainView(ListView):
+class MainMemeView(ListView):
     model = Meme
     # paginate_by = 20
     template_name = "memes/main_view.html"
     context_object_name = "memes"
 
+    def get_queryset(self):
+        data = super().get_queryset()
+        return data.filter(accepted=True)
+    
+
     def get_context_data(self, **kwargs):
         context =  super().get_context_data(**kwargs)
         context["form"] = MemeForm()
         return context
+
+
+class FreshMemeView(MainMemeView):
+    def get_queryset(self):
+        data =  super().get_queryset()
+        return data.filter(accepted=False)
+
 
 class MemeAdd(View):
     @method_decorator(login_required)

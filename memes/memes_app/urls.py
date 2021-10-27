@@ -23,11 +23,12 @@ from django.shortcuts import render
 
 from .models import Meme
 
-from .views import MainView, MemeView, MemeAdd, karma_change
+from .views import MainMemeView, MemeView, MemeAdd, karma_change, FreshMemeView
 
 
 urlpatterns = [
-    path("", MainView.as_view(), name="index"),
+    path("", MainMemeView.as_view(), name="index"),
+    path("fresh/", FreshMemeView.as_view(), name="fresh"),
     path("meme_add/", MemeAdd.as_view(), name="meme_add"),
     path("meme/<int:pk>/", MemeView.as_view(), name="meme_view"),
     path("meme/<int:pk>/karma/", karma_change, name="meme_karma_change")
