@@ -7,11 +7,17 @@ from django.core.files import File
 
 import uuid
 import os
+from django.conf import settings
 
 from PIL import Image
 from io import BytesIO
 
-from .utils import compress_image
+from .utils import add_watermark, compress_image
+from pathlib import Path
+
+#global variable, dont want to load watermark every time that someone uploads meme
+watermark = Image.open(settings.BASE_DIR / "static" / "images" / "watermark_small.png")
+
 
 def upload_meme_original(instance, filename):
     new_filename = uuid.uuid4()
@@ -20,8 +26,10 @@ def upload_meme_original(instance, filename):
 
 def upload_meme_normal(instance, filename):
     new_filename = uuid.uuid4()
-    ext = os.path.splitext(filename)[1]
-    return "memes/normal/{filename}{ext}".format(filename=new_filename, ext=ext)
+    # ext = os.path.splitext(filename)[1]
+    # return "memes/normal/{filename}{ext}".format(filename=new_filename, ext=ext)
+    new_filename = Path(instance.original_image.file.name).name  #original_image is already saved
+    return "memes/normal/{filename}".format(filename=new_filename)
 
 
 class Meme(models.Model):
@@ -44,14 +52,22 @@ class Meme(models.Model):
             #TODO: watermark
             img = Image.open(self.original_image)
             new_image = compress_image(img, 600)
+            add_watermark(new_image, watermark) #watermark = global variable
             buffer = BytesIO()
             new_image.save(buffer, format="JPEG", quality=90)
+
             self.normal_image = File(buffer, name="temp.jpg")
-
-
-
-            
+    
         super().save(args, kwargs)
+
+    def delete(self, *args, **kwargs):
+        '''Added image delete function'''
+        original = Path(self.original_image.path)
+        original.unlink(missing_ok=True)
+        normal = Path(self.normal_image.path)
+        normal.unlink(missing_ok=True)
+
+        super(Meme, self).delete(args, kwargs)
 
 class MemeKarma(models.Model):
     date_created    = models.DateTimeField(auto_now_add=True)

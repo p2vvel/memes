@@ -67,7 +67,6 @@ def user_karma_change(request, login):
     if request.user.is_authenticated:
         MyUserModel = get_user_model()
         sender = get_user(request)
-        #workaround, because "uncaught" exception made testing harder
     
         recipient = get_object_or_404(klass=MyUserModel, login=login)
 

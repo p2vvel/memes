@@ -4,11 +4,13 @@
 {% block content %}
 <h1>Main site</h1>
 
+{% if user.is_authenticated %}
 <form method="POST" action="{% url "meme_add" %}" enctype="multipart/form-data">
     {% csrf_token %}
     {{form.as_p}}
     <input type="submit" value="Add meme">
 </form>
+{% endif %}
 
 
 {% for m in memes %}
@@ -17,7 +19,7 @@
         {{m.title}}
         </a>
         </h3>
-        <img src={{m.original_image.url}} alt="Meme img">
+        <img src={{m.normal.url}} alt="Meme img">
         <p>{{m.description}}</p>
     </div>
 {% endfor %}
