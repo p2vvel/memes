@@ -12,7 +12,7 @@ from django.conf import settings
 from PIL import Image
 from io import BytesIO
 
-from .utils import add_watermark, compress_image
+from .utils import add_watermark, resize_image
 from pathlib import Path
 
 #global variable, dont want to load watermark every time that someone uploads meme
@@ -49,14 +49,14 @@ class Meme(models.Model):
         '''Have to remember about compressing image while saving it'''
         #compressed image will be saved only on adding
         if self._state.adding:
-            #TODO: watermark
             img = Image.open(self.original_image)
-            new_image = compress_image(img, 600)
+            new_image = resize_image(img, 600)
             add_watermark(new_image, watermark) #watermark = global variable
             buffer = BytesIO()
-            new_image.save(buffer, format="JPEG", quality=90)
-
-            self.normal_image = File(buffer, name="temp.jpg")
+            #TODO: save extension!!!!!
+            new_image.save(buffer, format="JPEG")
+            
+            self.normal_image = File(buffer, name=self.original_image.name)
     
         super().save(args, kwargs)
 
