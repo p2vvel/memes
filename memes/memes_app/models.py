@@ -15,6 +15,11 @@ from io import BytesIO
 from .utils import add_watermark, resize_image
 from pathlib import Path
 
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
+
+
+
 #global variable, dont want to load watermark every time that someone uploads meme
 watermark = Image.open(settings.BASE_DIR / "static" / "images" / "watermark_small.png")
 
@@ -40,7 +45,7 @@ class Meme(models.Model):
     hidden          = models.BooleanField(default=False, blank=True, null=False)
     accepted        = models.BooleanField(default=False, blank=True, null=False)
     data_accepted   = models.DateTimeField(blank=True, null=True)
-    original_image  = models.ImageField(max_length=255, blank=False, null=False, upload_to=upload_meme_original)
+    original_image  = models.ImageField(max_length=255, blank=False, null=False, upload_to=upload_meme_original, validators=[FileExtensionValidator(["png", "jpg", "gif"])])
     normal_image    = models.ImageField(max_length=255, blank=True, null=False, upload_to=upload_meme_normal)
 
     original_poster = models.ForeignKey(to=get_user_model(), default=None, null=True, on_delete=models.SET_NULL)
@@ -50,11 +55,12 @@ class Meme(models.Model):
         #compressed image will be saved only on adding
         if self._state.adding:
             img = Image.open(self.original_image)
+
             new_image = resize_image(img, 600)
             add_watermark(new_image, watermark) #watermark = global variable
             buffer = BytesIO()
             #TODO: save extension!!!!!
-            new_image.save(buffer, format="JPEG")
+            new_image.save(buffer, format=img.format)
             
             self.normal_image = File(buffer, name=self.original_image.name)
     
@@ -68,6 +74,19 @@ class Meme(models.Model):
         normal.unlink(missing_ok=True)
 
         super(Meme, self).delete(args, kwargs)
+
+    def clean(self) -> None:
+        '''Added image format checking. Only PNG, JPEG and GIF formats allowed'''
+        super().clean()
+        #validate image extension, only PNG, JPEG and GIF formats allowed
+        if self.original_image: #image has to be uploaded
+            img = Image.open(self.original_image)
+            if img.format not in ["JPEG", "PNG", "GIF"]:
+                img = Image.open(self.original_image) 
+                raise ValidationError({"original_image": "Wrong image extension!"})
+        else:
+            raise ValidationError({"original_image": "No image uploaded!"})
+
 
 class MemeKarma(models.Model):
     date_created    = models.DateTimeField(auto_now_add=True)
