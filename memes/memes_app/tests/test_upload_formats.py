@@ -64,3 +64,20 @@ class TestMemeView(TestCase):
             self.assertTrue(Path(new_meme.normal_image.path).is_file())
             img_nor = Image.open(new_meme.normal_image.path)
             self.assertEqual(img_nor.format, "JPEG")
+
+    def test_gif_upload(self):
+        '''tests if user can send memes in .gif format'''
+        self.client.login(**self.login_data)
+        for k in ["kiwka.gif", "stupki.gif"]:
+            title = Path(k).stem
+            original_image = SimpleUploadedFile(k, open(self.base_path / k, "rb").read())
+            new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
+            new_meme.save()
+            #TODO: finish tests
+            self.assertTrue(Path(new_meme.original_image.path).is_file())
+            img_ori = Image.open(new_meme.original_image.path)
+            self.assertEqual(Path(new_meme.original_image.path).suffix, ".gif")
+            self.assertEqual(img_ori.format, "GIF")
+            self.assertTrue(Path(new_meme.normal_image.path).is_file())
+            img_nor = Image.open(new_meme.normal_image.path)
+            self.assertEqual(img_nor.format, "GIF")

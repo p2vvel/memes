@@ -12,7 +12,7 @@ from django.conf import settings
 from PIL import Image
 from io import BytesIO
 
-from .utils import add_watermark, resize_image
+from .utils import add_watermark, get_normal_image, resize_image
 from pathlib import Path
 
 from django.core.exceptions import ValidationError
@@ -20,14 +20,12 @@ from django.core.validators import FileExtensionValidator
 
 
 
-#global variable, dont want to load watermark every time that someone uploads meme
-watermark = Image.open(settings.BASE_DIR / "static" / "images" / "watermark_small.png")
 
 
 def upload_meme_original(instance, filename):
     new_filename = uuid.uuid4()
     ext = os.path.splitext(filename)[1]
-    return "memes/original/{filename}{ext}".format(filename=new_filename, ext=ext)
+    return "memes/original/{filename}{ext}".format(filename=new_filename, ext=instance.image_extension)
 
 def upload_meme_normal(instance, filename):
     new_filename = uuid.uuid4()
@@ -52,38 +50,30 @@ class Meme(models.Model):
 
     def save(self, *args, **kwargs) -> None:
         '''Have to remember about compressing image while saving it'''
+        self.clean()    #clean isn't automatically invoked when calling save on model instance!!!!
+
         #compressed image will be saved only on adding
         if self._state.adding:
-            img = Image.open(self.original_image)
+            self.normal_image = get_normal_image(self.original_image)
 
-            new_image = resize_image(img, 600)
-            add_watermark(new_image, watermark) #watermark = global variable
-            buffer = BytesIO()
-            #TODO: save extension!!!!!
-            new_image.save(buffer, format=img.format)
-            
-            self.normal_image = File(buffer, name=self.original_image.name)
-    
         super().save(args, kwargs)
 
     def delete(self, *args, **kwargs):
         '''Added image delete function'''
-        original = Path(self.original_image.path)
-        original.unlink(missing_ok=True)
-        normal = Path(self.normal_image.path)
-        normal.unlink(missing_ok=True)
-
+        for p in [self.original_image.path, self.normal_image.path]:
+            path = Path(p)
+            path.unlink(missing_ok=True)
         super(Meme, self).delete(args, kwargs)
 
-    def clean(self) -> None:
+    def clean(self):
         '''Added image format checking. Only PNG, JPEG and GIF formats allowed'''
         super().clean()
-        #validate image extension, only PNG, JPEG and GIF formats allowed
         if self.original_image: #image has to be uploaded
             img = Image.open(self.original_image)
             if img.format not in ["JPEG", "PNG", "GIF"]:
-                img = Image.open(self.original_image) 
                 raise ValidationError({"original_image": "Wrong image extension!"})
+            #storing img extension(PIL format might be different from extension!)
+            self.image_extension = {"JPEG": ".jpg", "PNG": ".png", "GIF": ".gif"}[img.format]  
         else:
             raise ValidationError({"original_image": "No image uploaded!"})
 
