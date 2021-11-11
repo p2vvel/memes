@@ -14,9 +14,11 @@ from memes_app.models import Meme
 
 from PIL import Image
 
+from django.core.exceptions import ValidationError
+ 
 
-@override_settings(DEBUG=True)
-class TestMemeView(TestCase):
+
+class TestUploadFormatCorrectExtensions(TestCase):
     def setUp(self):
         user_model = get_user_model()
         new_user = user_model(login="jerry", email="jerry@example.com")
@@ -24,13 +26,7 @@ class TestMemeView(TestCase):
         new_user.save()
         self.base_path = settings.BASE_DIR.parent / "test_images"
         self.login_data = {"email": "jerry@example.com", "password": "1234"}
-        # for k in image_paths:
-        #     title = k.stem
-        #     description = k.stem + "meme"
-        #     original_image = SimpleUploadedFile(k.name, open(k, "rb").read())
-        #     new_meme = Meme(title=title, description=description, original_image=original_image, original_poster=new_user)
-        #     new_meme.save()
-    
+
     def test_png_upload(self):
         '''tests if user can send memes in .png format'''
         self.client.login(**self.login_data)
@@ -81,3 +77,23 @@ class TestMemeView(TestCase):
             self.assertTrue(Path(new_meme.normal_image.path).is_file())
             img_nor = Image.open(new_meme.normal_image.path)
             self.assertEqual(img_nor.format, "GIF")
+
+    def test_not_image_upload(self):
+        '''Non-images should raise ValidationError exception'''
+        self.client.login(**self.login_data)
+        for k in ["hello_world.docx", "hello_world.pdf"]:
+            title = Path(k).stem
+            original_image = SimpleUploadedFile(k, open(self.base_path / k, "rb").read())
+            new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
+            with self.assertRaises(ValidationError):
+                new_meme.save()
+
+    def test_unsupported_images(self):
+        '''Test images in formats different than JPEG, PNG, GIF'''
+        self.client.login(**self.login_data)
+        for k in ["klawier_cat.bmp", "sample_tiff.tiff", "sample_webp.webp"]:
+            title = Path(k).stem
+            original_image = SimpleUploadedFile(k, open(self.base_path / k, "rb").read())
+            new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
+            with self.assertRaises(ValidationError):
+                new_meme.save()

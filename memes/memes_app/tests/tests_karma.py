@@ -11,7 +11,7 @@ from pathlib import Path
 from memes_app.models import Meme
 
 
-class TestMemeView(TestCase):
+class TestMemeKarma(TestCase):
     def setUp(self):
         user_model = get_user_model()
         new_user = user_model(login="jerry", email="jerry@example.com")

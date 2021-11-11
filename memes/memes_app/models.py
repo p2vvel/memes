@@ -9,7 +9,7 @@ import uuid
 import os
 from django.conf import settings
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 
 from .utils import add_watermark, get_normal_image, resize_image
@@ -69,11 +69,18 @@ class Meme(models.Model):
         '''Added image format checking. Only PNG, JPEG and GIF formats allowed'''
         super().clean()
         if self.original_image: #image has to be uploaded
-            img = Image.open(self.original_image)
-            if img.format not in ["JPEG", "PNG", "GIF"]:
-                raise ValidationError({"original_image": "Wrong image extension!"})
-            #storing img extension(PIL format might be different from extension!)
-            self.image_extension = {"JPEG": ".jpg", "PNG": ".png", "GIF": ".gif"}[img.format]  
+            try:
+                img = Image.open(self.original_image)
+                if img.format not in ["JPEG", "PNG", "GIF"]:
+                    raise ValidationError({"original_image": "Wrong image format!"})
+                #storing img extension(PIL format might be different from extension!)
+                self.image_extension = {"JPEG": ".jpg", "PNG": ".png", "GIF": ".gif"}[img.format]
+            except UnidentifiedImageError:
+                raise ValidationError("Wrong image file!")  #raised if 'image' appears to be .pdf, .exe or other non-image file 
+            except ValidationError:
+                raise   #pass exception up
+            except Exception as e:
+                raise ValidationError("Error while validating!")    #other errors
         else:
             raise ValidationError({"original_image": "No image uploaded!"})
 
