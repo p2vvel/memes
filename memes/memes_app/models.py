@@ -29,8 +29,6 @@ def upload_meme_original(instance, filename):
 
 def upload_meme_normal(instance, filename):
     new_filename = uuid.uuid4()
-    # ext = os.path.splitext(filename)[1]
-    # return "memes/normal/{filename}{ext}".format(filename=new_filename, ext=ext)
     new_filename = Path(instance.original_image.file.name).name  #original_image is already saved
     return "memes/normal/{filename}".format(filename=new_filename)
 
@@ -42,8 +40,8 @@ class Meme(models.Model):
     karma           = models.IntegerField(blank=False, null=False, default=0)
     hidden          = models.BooleanField(default=False, blank=True, null=False)
     accepted        = models.BooleanField(default=False, blank=True, null=False)
-    data_accepted   = models.DateTimeField(blank=True, null=True)
-    original_image  = models.ImageField(max_length=255, blank=False, null=False, upload_to=upload_meme_original, validators=[FileExtensionValidator(["png", "jpg", "gif"])])
+    date_accepted   = models.DateTimeField(blank=True, null=True)
+    original_image  = models.ImageField(max_length=255, blank=False, null=False, upload_to=upload_meme_original)
     normal_image    = models.ImageField(max_length=255, blank=True, null=False, upload_to=upload_meme_normal)
 
     original_poster = models.ForeignKey(to=get_user_model(), default=None, null=True, on_delete=models.SET_NULL)

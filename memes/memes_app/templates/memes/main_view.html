@@ -19,9 +19,10 @@
         {{m.title}}
         </a>
         </h3>
-        <img src={{m.normal.url}} alt="Meme img">
+        <img src={{m.normal_image.url}} alt="Meme img">
         <p>{{m.description}}</p>
     </div>
+{% comment %} TODO: Add 'hidden' and 'accepted' switch for superuser {% endcomment %}
 {% endfor %}
 
 

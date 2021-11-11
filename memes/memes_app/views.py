@@ -1,3 +1,4 @@
+from typing import List
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
 
@@ -25,19 +26,19 @@ class MainMemeView(ListView):
 
     def get_queryset(self):
         data = super().get_queryset()
-        return data.filter(accepted=True)
+        return data.filter(accepted=True).order_by("-date_accepted")
     
 
     def get_context_data(self, **kwargs):
-        context =  super().get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context["form"] = MemeForm()
         return context
 
 
 class FreshMemeView(MainMemeView):
     def get_queryset(self):
-        data =  super().get_queryset()
-        return data.filter(accepted=False)
+        data = super(ListView, self).get_queryset()
+        return data.filter(accepted=False).order_by("-date_created")
 
 
 class MemeAdd(View):

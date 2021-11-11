@@ -35,7 +35,6 @@ class TestUploadFormatCorrectExtensions(TestCase):
             original_image = SimpleUploadedFile(k, open(self.base_path / k, "rb").read())
             new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
             new_meme.save()
-            #TODO: finish tests
             self.assertTrue(Path(new_meme.original_image.path).is_file())
             img_ori = Image.open(new_meme.original_image.path)
             self.assertEqual(Path(new_meme.original_image.path).suffix, ".png")
@@ -52,7 +51,6 @@ class TestUploadFormatCorrectExtensions(TestCase):
             original_image = SimpleUploadedFile(k, open(self.base_path / k, "rb").read())
             new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
             new_meme.save()
-            #TODO: finish tests
             self.assertTrue(Path(new_meme.original_image.path).is_file())
             img_ori = Image.open(new_meme.original_image.path)
             self.assertEqual(Path(new_meme.original_image.path).suffix, ".jpg")
@@ -69,7 +67,6 @@ class TestUploadFormatCorrectExtensions(TestCase):
             original_image = SimpleUploadedFile(k, open(self.base_path / k, "rb").read())
             new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
             new_meme.save()
-            #TODO: finish tests
             self.assertTrue(Path(new_meme.original_image.path).is_file())
             img_ori = Image.open(new_meme.original_image.path)
             self.assertEqual(Path(new_meme.original_image.path).suffix, ".gif")

@@ -26,6 +26,9 @@
 				<a class="nav-link" aria-current="page" href={% url "index" %}>Home</a>
 				</li>
 				<li class="nav-item">
+				<a class="nav-link" aria-current="page" href={% url "fresh" %}>Fresh</a>
+				</li>
+				<li class="nav-item">
 				<a class="nav-link" aria-current="page" href={% url "meme_add" %}>Add</a>
 				</li>
 				{% if user.is_authenticated %}

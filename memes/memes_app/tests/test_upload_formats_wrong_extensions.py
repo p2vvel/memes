@@ -17,11 +17,6 @@ from PIL import Image
 from django.core.exceptions import ValidationError
  
 
-#TODO: test supported image with non-image extension
-#TODO:  
-
-
-
 @override_settings(DEBUG=True)
 class TestUploadFormatCorrectExtensions(TestCase):
     def setUp(self):
@@ -42,7 +37,6 @@ class TestUploadFormatCorrectExtensions(TestCase):
             original_image = SimpleUploadedFile(k, open(self.base_path /"png_format" / k, "rb").read())
             new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
             new_meme.save()
-            #TODO: finish tests
             self.assertTrue(Path(new_meme.original_image.path).is_file())
             img_ori = Image.open(new_meme.original_image.path)
             self.assertEqual(Path(new_meme.original_image.path).suffix, ".png")
@@ -61,7 +55,6 @@ class TestUploadFormatCorrectExtensions(TestCase):
             original_image = SimpleUploadedFile(k, open(self.base_path /"jpg_format" / k, "rb").read())
             new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
             new_meme.save()
-            #TODO: finish tests
             self.assertTrue(Path(new_meme.original_image.path).is_file())
             img_ori = Image.open(new_meme.original_image.path)
             self.assertEqual(Path(new_meme.original_image.path).suffix, ".jpg")
@@ -80,7 +73,6 @@ class TestUploadFormatCorrectExtensions(TestCase):
             original_image = SimpleUploadedFile(k, open(self.base_path / "gif_format" / k, "rb").read())
             new_meme = Meme(title=title, original_image=original_image, original_poster=get_user(self.client))
             new_meme.save()
-            #TODO: finish tests
             self.assertTrue(Path(new_meme.original_image.path).is_file())
             img_ori = Image.open(new_meme.original_image.path)
             self.assertEqual(Path(new_meme.original_image.path).suffix, ".gif")
