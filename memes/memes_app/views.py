@@ -20,7 +20,7 @@ from django.urls.base import reverse
 #main site with accepted memes
 class MainMemeView(ListView):
     model = Meme
-    # paginate_by = 20
+    paginate_by = 8
     template_name = "memes/main_view.html"
     context_object_name = "memes"
 
@@ -36,10 +36,14 @@ class MainMemeView(ListView):
 
 
 class FreshMemeView(MainMemeView):
+    template_name = "memes/fresh_view.html"
     def get_queryset(self):
         data = super(ListView, self).get_queryset()
         return data.filter(accepted=False).order_by("-date_created")
 
+
+def fresh_meme_index(request):
+    return FreshMemeView.as_view(request, page=1)
 
 class MemeAdd(View):
     @method_decorator(login_required)
