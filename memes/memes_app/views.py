@@ -23,10 +23,15 @@ class MainMemeView(ListView):
     paginate_by = 8
     template_name = "memes/main_view.html"
     context_object_name = "memes"
+    ordering = ["-date_accepted"]
 
     def get_queryset(self):
         data = super().get_queryset()
-        return data.filter(accepted=True).order_by("-date_accepted")
+        return data.filter(accepted=True, hidden=False)
+        # data = (self.model.objects.all()
+        #     .order_by(*self.ordering)
+        #     .filter(accepted=False))
+        # return data
     
 
     def get_context_data(self, **kwargs):
@@ -37,13 +42,15 @@ class MainMemeView(ListView):
 
 class FreshMemeView(MainMemeView):
     template_name = "memes/fresh_view.html"
+    ordering = ["-date_created"]
     def get_queryset(self):
         data = super(ListView, self).get_queryset()
-        return data.filter(accepted=False).order_by("-date_created")
+        return data.filter(accepted=False, hidden=False)
+        # data = (self.model.objects.all()
+        #     .order_by(*self.ordering)
+        #     .filter(accepted=False, hidden=False))
+        # return data
 
-
-def fresh_meme_index(request):
-    return FreshMemeView.as_view(request, page=1)
 
 class MemeAdd(View):
     @method_decorator(login_required)

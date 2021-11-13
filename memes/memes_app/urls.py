@@ -29,8 +29,8 @@ from .views import MainMemeView, MemeView, MemeAdd, karma_change, FreshMemeView
 urlpatterns = [
     #default page is 1 if not specified
     path("", MainMemeView.as_view(), name="index"),
-    path("fresh/", FreshMemeView.as_view(), name="fresh_index"),
     path("page/<int:page>/", MainMemeView.as_view(), name="memes"),
+    path("fresh/", FreshMemeView.as_view(), name="fresh_index"),
     path("fresh/page/<int:page>/", FreshMemeView.as_view(), name="fresh_memes"),
     path("meme_add/", MemeAdd.as_view(), name="meme_add"),
     path("meme/<int:pk>/", MemeView.as_view(), name="meme_view"),
