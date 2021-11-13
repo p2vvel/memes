@@ -14,6 +14,8 @@ from django.utils.decorators import method_decorator
 
 from django.urls.base import reverse
 
+from django.utils import timezone
+
 # Create your views here.
 
 
@@ -96,3 +98,37 @@ def karma_change(request, pk):
         return redirect(reverse("meme_view", args=(meme.pk,)))
     else:
         return redirect(reverse("index"))
+
+
+#TODO: test this functionality
+def visibility_change(request, pk):
+    '''Change meme visibility (only available for admin)'''
+    if request.user.is_authenticated and request.user.is_superuser:
+        meme = get_object_or_404(Meme, pk=pk)
+
+        meme.hidden = not meme.hidden
+        meme.save()
+
+        return redirect(reverse("meme_view", args=(meme.pk,)))
+    else:
+        return redirect("index")
+
+
+#TODO: test this functionality
+def acceptance_change(request, pk):
+    '''Change if meme is accepted(visible on main meme listview), available only for admin'''
+    if request.user.is_authenticated and request.user.is_superuser:
+        meme = get_object_or_404(Meme, pk=pk)
+
+        if not meme.accepted:
+            meme.accepted = True
+            meme.date_accepted = timezone.now()
+            meme.save()
+        else:
+            meme.accepted = False
+            meme.date_accepted = None
+            meme.save()
+        
+        return redirect(reverse("meme_view", args=(meme.pk,)))
+    else:
+        return redirect("index")

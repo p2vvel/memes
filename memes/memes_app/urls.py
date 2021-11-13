@@ -13,17 +13,11 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.http.response import HttpResponse
 from django.urls import path
-from django.urls.conf import include
 
 
-from django.shortcuts import render
 
-from .models import Meme
-
-from .views import MainMemeView, MemeView, MemeAdd, karma_change, FreshMemeView
+from .views import MainMemeView, MemeView, MemeAdd, acceptance_change, karma_change, FreshMemeView, visibility_change
 
 
 urlpatterns = [
@@ -34,5 +28,7 @@ urlpatterns = [
     path("fresh/page/<int:page>/", FreshMemeView.as_view(), name="fresh_memes"),
     path("meme_add/", MemeAdd.as_view(), name="meme_add"),
     path("meme/<int:pk>/", MemeView.as_view(), name="meme_view"),
-    path("meme/<int:pk>/karma/", karma_change, name="meme_karma_change")
+    path("meme/<int:pk>/karma/", karma_change, name="meme_karma_change"),
+    path("meme/<int:pk>/visibility/", visibility_change, name="meme_visibility_change"),
+    path("meme/<int:pk>/acceptance/", acceptance_change, name="meme_acceptance_change"),
 ]
