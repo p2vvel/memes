@@ -9,10 +9,12 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from pathlib import Path
 
+from django.utils import timezone
 from memes_app.models import Meme
 
 
 class TestMemeModel(TestCase):
+
     def setUp(self):
         user_model = get_user_model()
         new_user = user_model(login="jerry", email="jerry@example.com")
@@ -56,3 +58,175 @@ class TestMemeModel(TestCase):
             memes[k].save()
 
         self.assertCountEqual([k.accepted for k in memes], [k.accepted for k in Meme.objects.all()])
+
+
+class TestMemeModelVisibilityChange(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.user_data = {"email": "jerry@example.com", "password": "1234"}
+        new_user = user_model(login="jerry", email="jerry@example.com")
+        new_user.set_password("1234")
+        new_user.save()
+        
+        self.superuser_data = {"email": "delilah@example.com", "password": "1234"}
+        new_superuser = user_model(login="delilah", email="delilah@example.com", is_superuser=True)
+        new_superuser.set_password("1234")
+        new_superuser.save()
+
+        image_names = ("meme1.jpg", "meme2.jpg")
+
+        image_paths = [settings.BASE_DIR.parent / "test_images" / k for k in image_names]
+        for k in image_paths:
+            title = k.stem
+            description = k.stem + "meme"
+            original_image = SimpleUploadedFile(k.stem, open(k, "rb").read())
+            new_meme = Meme(title=title, description=description, original_image=original_image, original_poster=new_user)
+            new_meme.date_accepted = timezone.now()
+            new_meme.save()
+
+
+    def test_visibility_change_superuser(self):
+        '''Check if superuser can change visibility'''
+        self.client.login(**self.superuser_data)
+
+        memes = Meme.objects.all()
+        for m in memes:
+            self.assertEqual(m.hidden, False)
+            
+            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            m.refresh_from_db()
+            self.assertRedirects(response, reverse("meme_view", args=(m.pk,)))
+            self.assertEqual(m.hidden, True)
+            
+            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            m.refresh_from_db()
+            self.assertRedirects(response, reverse("meme_view", args=(m.pk,)))
+            self.assertEqual(m.hidden, False)
+
+
+    def test_visibility_change_normal_user(self):
+        '''Check if normal can change visibility'''
+        self.client.login(**self.user_data)
+
+        memes = Meme.objects.all()
+        for m in memes:
+            self.assertEqual(m.hidden, False)
+            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            self.assertRedirects(response, reverse("index"))
+            m.refresh_from_db()
+            self.assertEqual(m.hidden, False)
+            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            self.assertRedirects(response, reverse("index"))
+            m.refresh_from_db()
+            self.assertEqual(m.hidden, False)
+
+
+    def test_visibility_change_anonymous(self):
+        '''Check if anonymous can change visibility'''
+
+        memes = Meme.objects.all()
+        for m in memes:
+            self.assertEqual(m.hidden, False)
+
+            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            m.refresh_from_db()
+            self.assertRedirects(response, reverse("index"))
+            self.assertEqual(m.hidden, False)
+
+            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            m.refresh_from_db()
+            self.assertRedirects(response, reverse("index"))
+            self.assertEqual(m.hidden, False)
+
+
+    
+class TestMemeModelAcceptanceChange(TestCase):
+    def setUp(self):
+        user_model = get_user_model()
+        self.user_data = {"email": "jerry@example.com", "password": "1234"}
+        new_user = user_model(login="jerry", email="jerry@example.com")
+        new_user.set_password("1234")
+        new_user.save()
+        
+        self.superuser_data = {"email": "delilah@example.com", "password": "1234"}
+        new_superuser = user_model(login="delilah", email="delilah@example.com", is_superuser=True)
+        new_superuser.set_password("1234")
+        new_superuser.save()
+
+        image_names = ("meme1.jpg", "meme2.jpg")
+
+        image_paths = [settings.BASE_DIR.parent / "test_images" / k for k in image_names]
+        for k in image_paths:
+            title = k.stem
+            description = k.stem + "meme"
+            original_image = SimpleUploadedFile(k.stem, open(k, "rb").read())
+            new_meme = Meme(title=title, description=description, original_image=original_image, original_poster=new_user)
+            new_meme.save()
+
+    def test_acceptance_change_superuser(self):
+        '''Check if superuser can change acceptance'''
+        self.client.login(**self.superuser_data)
+
+        memes = Meme.objects.all()
+        for m in memes:
+            self.assertEqual(m.accepted, False)
+            self.assertEqual(m.date_accepted, None)
+            
+            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertRedirects(response, reverse("meme_view", args=(m.pk,)))
+            m.refresh_from_db()
+            self.assertEqual(m.accepted, True)
+            # self.assertEqual(m.date_accepted, None)
+            
+            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertRedirects(response, reverse("meme_view", args=(m.pk,)))
+            m.refresh_from_db()
+            self.assertEqual(m.accepted, False)
+            # self.assertEqual(m.date_accepted, None)
+
+    def test_visibility_change_normal_user(self):
+        '''Check if normal can change acceptance'''
+        self.client.login(**self.user_data)
+
+        memes = Meme.objects.all()
+        for m in memes:
+            self.assertEqual(m.accepted, False)
+            self.assertEqual(m.date_accepted, None)
+
+            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertRedirects(response, reverse("index"))
+            m.refresh_from_db()
+            self.assertEqual(m.accepted, False)
+            self.assertEqual(m.date_accepted, None)
+
+
+            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertRedirects(response, reverse("index"))
+            m.refresh_from_db()
+            self.assertEqual(m.accepted, False)
+            self.assertEqual(m.date_accepted, None)
+
+
+
+    def test_visibility_change_normal_user(self):
+        '''Check if anonymous can change acceptance'''
+
+        memes = Meme.objects.all()
+        for m in memes:
+            self.assertEqual(m.accepted, False)
+            self.assertEqual(m.date_accepted, None)
+            
+            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertRedirects(response, reverse("index"))
+            m.refresh_from_db()
+            self.assertEqual(m.accepted, False)
+            self.assertEqual(m.date_accepted, None)
+
+            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertRedirects(response, reverse("index"))
+            m.refresh_from_db()
+            self.assertEqual(m.accepted, False)
+            self.assertEqual(m.date_accepted, None)
+
+
+    
