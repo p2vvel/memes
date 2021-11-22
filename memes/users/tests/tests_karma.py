@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.checks import messages
 from django.test import TestCase
 from django.urls import reverse
 
@@ -21,8 +22,9 @@ class TestKarmaSystem(TestCase):
         '''Anonymous user should be redirected to index page'''
         # self.client.login(email="jerry@example.com", password="1234")
         jerry = get_user_model().objects.get(email="jerry@example.com")
-        response = self.client.get(reverse("user_karma_change", args=(jerry.login,)), follow=True)
-        self.assertRedirects(response, reverse("index"))
+        response = self.client.post(reverse("user_karma_change", args=(jerry.login,)), follow=True)
+        self.assertJSONEqual(response.content, {"success": False, "msg": "Login to vote!"})
+
 
     def test_karma_change(self):
         '''User should be able to add respect point to another user'''
@@ -31,9 +33,10 @@ class TestKarmaSystem(TestCase):
         self.client.login(email="jerry@example.com", password="1234")
         self.assertEqual(jerry.karma, 0)
         self.assertEqual(delilah.karma, 0)
+        messages = ["Successfully taken karma away!", "Successfully given karma!"]
         for k in [1, 0, 1, 0]:
-            response = self.client.get(reverse("user_karma_change", args=(delilah.login,)), follow=True)
-            self.assertRedirects(response, reverse("profile", args=(delilah.login,)))
+            response = self.client.post(reverse("user_karma_change", args=(delilah.login,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": True, "karma": k, "karma_given": bool(k), "msg": messages[k]})
             delilah.refresh_from_db()
             self.assertEqual(delilah.karma, k)
 
@@ -45,17 +48,20 @@ class TestKarmaSystem(TestCase):
         jerry.save()
         delilah.karma = 0
         delilah.save()
+        messages = ["Successfully taken karma away!", "Successfully given karma!"]
+
         for x, y in zip([1, 0, 1, 0], [1, 0, 1, 0]):
             self.client.login(email="jerry@example.com", password="1234")
-            response = self.client.get(reverse("user_karma_change", args=(delilah.login,)), follow=True)
-            self.assertRedirects(response, reverse("profile", args=(delilah.login,)))
+            response = self.client.post(reverse("user_karma_change", args=(delilah.login,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": True, "karma": x, "karma_given": bool(x), "msg": messages[x]})
+
             delilah.refresh_from_db()
             self.assertEqual(delilah.karma, x)
             self.client.logout()
 
             self.client.login(email="delilah@example.com", password="1234")
-            response = self.client.get(reverse("user_karma_change", args=(jerry.login,)), follow=True)
-            self.assertRedirects(response, reverse("profile", args=(jerry.login,)))
+            response = self.client.post(reverse("user_karma_change", args=(jerry.login,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": True, "karma": y, "karma_given": bool(y), "msg": messages[y]})
             jerry.refresh_from_db()
             self.assertEqual(jerry.karma, y)
             self.client.logout()
@@ -64,13 +70,14 @@ class TestKarmaSystem(TestCase):
         '''User shouldnt be able to give karma itself'''
         jerry = get_user_model().objects.get(login="jerry")
         self.client.login(email="jerry@example.com", password="1234")
-        response = self.client.get(reverse("user_karma_change", args=(jerry.login,)), follow=True)
-        self.assertRedirects(response, reverse("index"))
+        response = self.client.post(reverse("user_karma_change", args=(jerry.login,)), follow=True)
+        # self.assertRedirects(response, reverse("index"))
+        self.assertJSONEqual(response.content, {"success": False, "msg": "No self voting!"})
         jerry.refresh_from_db()
         self.assertEqual(jerry.karma, 0)
 
     def test_karma_404(self):
         '''No karma for not existing user'''
         self.client.login(email="jerry@example.com", password="1234")
-        response = self.client.get(reverse("user_karma_change", args=("jules", )))
+        response = self.client.post(reverse("user_karma_change", args=("jules", )))
         self.assertEqual(response.status_code, 404)

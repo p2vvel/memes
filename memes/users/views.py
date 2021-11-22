@@ -5,7 +5,9 @@ from django.views.generic.detail import DetailView
 from django.contrib.auth import authenticate, get_user, get_user_model, login
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import get_object_or_404
-from django.http import Http404
+from django.http import JsonResponse
+
+
 
 from users.forms import MyUserCreationForm, MyUserUpdateForm
 from .models import Karma
@@ -63,31 +65,30 @@ def edit_view(request):
     return render(request, "users/user_profile_edit.html", context)
 
 
-def user_karma_change(request, login):
+#TODO: AJAX
+def user_karma_change(request, login) -> JsonResponse:
     if request.user.is_authenticated:
         MyUserModel = get_user_model()
         sender = get_user(request)
     
         recipient = get_object_or_404(klass=MyUserModel, login=login)
 
-        #NO CHEATING
-        #TODO: give some information after such incident
         if recipient == sender:
-            return redirect("index")
+            return JsonResponse({"success": False, "msg": "No self voting!"})
 
         try:
             given_karma = Karma.objects.get(sender=sender, recipient=recipient) #recipient was previously given karma point by sender
             given_karma.delete()
             recipient.karma -= 1
             recipient.save()
+            return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": False, "msg": "Successfully taken karma away!"})
         except Karma.DoesNotExist:
             #recipient wasnt given karma point by sender
             karma = Karma(sender=sender, recipient=recipient)
             karma.save()
             recipient.karma += 1
             recipient.save()
-        
-        return redirect(reverse("profile", args=(recipient.login,)))
+            return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": True, "msg": "Successfully given karma!"})
     else:
-        return redirect("index")
+        return JsonResponse({"success": False, "msg": "Login to vote!"})
 

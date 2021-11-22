@@ -4,12 +4,46 @@
 
 {% block content %}
 
+
+
+<script>
+window.addEventListener('load', () =>{
+
+let url ="{% url 'user_karma_change' login=profile.login %}";
+let karma_button = document.querySelector("#karma_button");
+
+karma_button.addEventListener("click", () => {
+    let request = new Request(url, {headers: {"X-CSRFToken": "{{csrf_token}}"}});
+    fetch(request, {
+        method: "POST",
+        mode: "same-origin"
+    })
+    .then(response => {
+        if(response.ok)
+            return response.json();
+        else
+            throw Error(response.statusText);
+    })
+    .then(data => {
+        if (data.success)
+            karma_button.innerText = `Karma ${data.karma}`;
+        else
+            throw Error("Data NOT OK");
+    })
+    .catch(error => {
+        console.log(error.message);
+    });
+
+    });
+});
+</script>
+
+
 <h3>Your profile</h3>
 
 <p>{{profile.login}}</p>
 
 <p>{{profile.email}}</p>
-<p>{{profile.karma}}</p>
 
 <p>{{profile.description}}</p>
 
@@ -18,11 +52,10 @@
 {% endif %}
 
 {% if user.is_authenticated %}
-{% if profile.pk != user.pk %}
-    <a href={% url "user_karma_change" login=profile.login %}>
-        <button>Karma</button>
-    </a>
-{% endif %}
+    {% if profile.pk != user.pk %}
+    {% csrf_token %}
+            <button id="karma_button">Karma {{profile.karma}}</button>
+    {% endif %}
 {% endif %}
 
 
