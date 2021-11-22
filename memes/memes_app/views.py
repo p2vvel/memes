@@ -1,4 +1,6 @@
 from typing import List
+from django.http.response import Http404
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
 
@@ -80,57 +82,76 @@ class MemeView(DetailView):
     template_name = "memes/meme_view.html"
 
 
-#TODO: AJAX
 def karma_change(request, pk):
-    if request.user.is_authenticated:
-        user = get_user(request)
-        meme = get_object_or_404(Meme, pk=pk)
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            user = get_user(request)
+            meme = get_object_or_404(Meme, pk=pk)
 
-        try:
-            given_karma = MemeKarma.objects.get(user=user, meme=meme)
-            given_karma.delete()
-            meme.karma -= 1   
-            meme.save()
-        except MemeKarma.DoesNotExist:
-            #meme wasnt given karma point by user
-            given_karma = MemeKarma(user=user, meme=meme)
-            given_karma.save()
-            meme.karma += 1
-            meme.save()
-        return redirect(reverse("meme_view", args=(meme.pk,)))
+            try:
+                given_karma = MemeKarma.objects.get(user=user, meme=meme)
+                given_karma.delete()
+                meme.karma -= 1   
+                meme.save()
+                msg =  "Succesfully taken karma away!"
+                karma_given = False
+            except MemeKarma.DoesNotExist:
+                #meme wasnt given karma point by user
+                given_karma = MemeKarma(user=user, meme=meme)
+                given_karma.save()
+                meme.karma += 1
+                meme.save()
+                msg = "Succesfully fiven karma point"
+                karma_given = True
+
+            return JsonResponse({"success": True, "karma_given": karma_given, "karma": meme.karma, "msg": msg})
+        else:
+            return JsonResponse({"success": False, "msg": "Log in to vote!"})
     else:
-        return redirect(reverse("index"))
+        raise Http404()
 
 
-#TODO: AJAX
 def visibility_change(request, pk) -> JsonResponse:
     '''Change meme visibility (only available for admin)'''
-    if request.user.is_authenticated and request.user.is_superuser:
-        meme = get_object_or_404(Meme, pk=pk)
+    if request.method == "POST":
+        if request.user.is_authenticated and request.user.is_superuser:
+            meme = get_object_or_404(Meme, pk=pk)
 
-        meme.hidden = not meme.hidden
-        meme.save()
+            meme.hidden = not meme.hidden
+            meme.save()
 
-        return redirect(reverse("meme_view", args=(meme.pk,)))
+            # return redirect(reverse("meme_view", args=(meme.pk,)))
+            msg = "Succesfully set meme visible" if meme.hidden else "Succesfully hidden meme"
+            return JsonResponse({"success": True, "hidden": meme.hidden, "msg": msg})
+        else:
+            # return redirect("index")
+            return JsonResponse({"success": False, "msg": "No permission!"})
     else:
-        return redirect("index")
+        raise Http404()
 
 
-#TODO: AJAX
 def acceptance_change(request, pk) -> JsonResponse:
     '''Change if meme is accepted(visible on main meme listview), available only for admin'''
-    if request.user.is_authenticated and request.user.is_superuser:
-        meme = get_object_or_404(Meme, pk=pk)
+    if request.method == "POST":
+        if request.user.is_authenticated and request.user.is_superuser:
+            meme = get_object_or_404(Meme, pk=pk)
 
-        if not meme.accepted:
-            meme.accepted = True
-            meme.date_accepted = timezone.now()
-            meme.save()
+            if not meme.accepted:
+                meme.accepted = True
+                meme.date_accepted = timezone.now()
+                meme.save()
+                msg = "Succesfully accepted meme"
+            else:
+                meme.accepted = False
+                meme.date_accepted = None
+                meme.save()
+                msg = "Succesfully reversed meme acceptance"
+            
+            return JsonResponse({"success": True, "accepted": meme.accepted, "msg": msg})
+            # return redirect(reverse("meme_view", args=(meme.pk,)))
         else:
-            meme.accepted = False
-            meme.date_accepted = None
-            meme.save()
-        
-        return redirect(reverse("meme_view", args=(meme.pk,)))
+            # return JsonResponse({"success": False, "msg": "Failed to change acceptance"})
+            return JsonResponse({"success": False, "msg": "No permission!"})
+            # return redirect("index")
     else:
-        return redirect("index")
+        raise Http404()

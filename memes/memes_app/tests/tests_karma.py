@@ -29,8 +29,8 @@ class TestMemeKarma(TestCase):
         '''Anonymous user shouldnt be able to change karma points state'''
         memes = Meme.objects.all()
         for m in memes:
-            response = self.client.get(reverse("meme_karma_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("index"))    #anonymous user should be redirected
+            response = self.client.post(reverse("meme_karma_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": False, "msg": "Log in to vote!"})
             m.refresh_from_db()
             self.assertEqual(0, m.karma)    #karma points should remain unchanged
 
@@ -39,14 +39,17 @@ class TestMemeKarma(TestCase):
         self.client.login(email="jerry@example.com", password="1234")
         memes = Meme.objects.all()
         meme = memes[0]
+        messages = ["Succesfully taken karma away!", "Succesfully fiven karma point"]
         for k in [1, 0, 1, 0]:
-            response = self.client.get(reverse("meme_karma_change", args=(meme.pk,)), follow=True)
-            self.assertRedirects(response, reverse("meme_view", args=(meme.pk,)))
+            response = self.client.post(reverse("meme_karma_change", args=(meme.pk,)), follow=True)
+            # self.assertRedirects(response, reverse("meme_view", args=(meme.pk,)))
+            self.assertJSONEqual(response.content, {"success": True, "karma_given": bool(k), "karma": k, "msg": messages[k]})
+            
             meme.refresh_from_db()
             self.assertEqual(meme.karma, k)
 
     def test_karma_404(self):
         '''Adding karma to non existing meme should raise 404'''
         self.client.login(email="jerry@example.com", password="1234")
-        response = self.client.get("/meme/{pk}/karma/".format(pk=999))      #reverse was raising exception
+        response = self.client.post("/meme/{pk}/karma/".format(pk=999))      #reverse was raising exception
         self.assertEqual(response.status_code, 404)

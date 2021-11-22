@@ -81,14 +81,19 @@ def user_karma_change(request, login) -> JsonResponse:
                 given_karma.delete()
                 recipient.karma -= 1
                 recipient.save()
-                return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": False, "msg": "Successfully taken karma away!"})
+                karma_given =  False
+                msg = "Successfully taken karma away!"
             except Karma.DoesNotExist:
                 #recipient wasnt given karma point by sender
                 karma = Karma(sender=sender, recipient=recipient)
                 karma.save()
                 recipient.karma += 1
                 recipient.save()
-                return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": True, "msg": "Successfully given karma!"})
+                karma_given =  True
+                msg =  "Successfully given karma!"
+            
+            return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": karma_given, "msg": msg})
+
         else:
             return JsonResponse({"success": False, "msg": "Login to vote!"})
     else:

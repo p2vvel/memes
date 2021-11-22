@@ -5,14 +5,49 @@
 {% block content %}
 
 
+<script>
+window.addEventListener('load', () =>{
+
+let url ="{% url 'meme_karma_change' pk=meme.pk %}";
+let karma_button = document.querySelector("#karma_button");
+
+karma_button.addEventListener("click", () => {
+    let request = new Request(url, {headers: {"X-CSRFToken": "{{csrf_token}}"}});
+    fetch(request, {
+        method: "POST",
+        mode: "same-origin"
+    })
+    .then(response => {
+        if(response.ok)
+            return response.json();
+        else
+            throw Error(response.statusText);
+    })
+    .then(data => {
+        if (data.success)
+            karma_button.innerText = `Karma ${data.karma}`;
+        else
+            throw Error("Data NOT OK");
+    })
+    .catch(error => {
+        console.log(error.message);
+    });
+
+    });
+});
+</script>
+
+
+
+
 
 <div class="meme">
     <h3>{{meme.title}}</h3>
     <img src={{meme.normal_image.url}} alt="Meme img">
     <p>{{meme.description}}</p>
-    <p>Karma: {{meme.karma}} </p>
     {% if user.is_authenticated %}
-        <a href={% url "meme_karma_change" pk=meme.pk %}><button>+</button></a>
+        <button id="karma_button">Karma {{meme.karma}}</button>
+        {% comment %} <a href={% url "meme_karma_change" pk=meme.pk %}><button>+</button></a> {% endcomment %}
     {% endif %}
 </div>
 

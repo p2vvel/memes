@@ -40,6 +40,7 @@ class MyUser(AbstractBaseUser):
     karma           = models.IntegerField(verbose_name="Karma points",default=0, null=False)
     date_created    = models.DateTimeField(verbose_name="Registration date", auto_now_add=True)
     last_login      = models.DateTimeField(auto_now=True)
+    #TODO: profile image compression and resizing
     profile_img     = models.ImageField(max_length=255, default=None, upload_to=upload_avatar, blank=True)
     description     = models.TextField(default="", max_length=1000, null=True, blank=True)
 

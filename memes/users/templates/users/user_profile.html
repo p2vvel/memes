@@ -53,8 +53,7 @@ karma_button.addEventListener("click", () => {
 
 {% if user.is_authenticated %}
     {% if profile.pk != user.pk %}
-    {% csrf_token %}
-            <button id="karma_button">Karma {{profile.karma}}</button>
+        <button id="karma_button">Karma {{profile.karma}}</button>
     {% endif %}
 {% endif %}
 

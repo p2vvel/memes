@@ -89,18 +89,19 @@ class TestMemeModelVisibilityChange(TestCase):
         '''Check if superuser can change visibility'''
         self.client.login(**self.superuser_data)
 
+        messages = ["Succesfully hidden meme", "Succesfully set meme visible"]
         memes = Meme.objects.all()
         for m in memes:
             self.assertEqual(m.hidden, False)
             
-            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            response = self.client.post(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
             m.refresh_from_db()
-            self.assertRedirects(response, reverse("meme_view", args=(m.pk,)))
+            self.assertJSONEqual(response.content, {"success": True, "msg": messages[1], "hidden": m.hidden})
             self.assertEqual(m.hidden, True)
             
-            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            response = self.client.post(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
             m.refresh_from_db()
-            self.assertRedirects(response, reverse("meme_view", args=(m.pk,)))
+            self.assertJSONEqual(response.content, {"success": True, "msg": messages[0], "hidden": m.hidden})
             self.assertEqual(m.hidden, False)
 
 
@@ -111,12 +112,13 @@ class TestMemeModelVisibilityChange(TestCase):
         memes = Meme.objects.all()
         for m in memes:
             self.assertEqual(m.hidden, False)
-            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("index"))
+            response = self.client.post(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": False, "msg": "No permission!"})
+
             m.refresh_from_db()
             self.assertEqual(m.hidden, False)
-            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("index"))
+            response = self.client.post(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": False, "msg": "No permission!"})
             m.refresh_from_db()
             self.assertEqual(m.hidden, False)
 
@@ -128,14 +130,14 @@ class TestMemeModelVisibilityChange(TestCase):
         for m in memes:
             self.assertEqual(m.hidden, False)
 
-            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            response = self.client.post(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
             m.refresh_from_db()
-            self.assertRedirects(response, reverse("index"))
+            self.assertJSONEqual(response.content, {"success": False, "msg": "No permission!"})
             self.assertEqual(m.hidden, False)
 
-            response = self.client.get(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
+            response = self.client.post(reverse("meme_visibility_change", args=(m.pk,)), follow=True)
             m.refresh_from_db()
-            self.assertRedirects(response, reverse("index"))
+            self.assertJSONEqual(response.content, {"success": False, "msg": "No permission!"})
             self.assertEqual(m.hidden, False)
 
 
@@ -167,24 +169,23 @@ class TestMemeModelAcceptanceChange(TestCase):
         '''Check if superuser can change acceptance'''
         self.client.login(**self.superuser_data)
 
+        messages = ["Succesfully reversed meme acceptance", "Succesfully accepted meme"]
         memes = Meme.objects.all()
         for m in memes:
             self.assertEqual(m.accepted, False)
             self.assertEqual(m.date_accepted, None)
             
-            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("meme_view", args=(m.pk,)))
+            response = self.client.post(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": True, "msg": messages[1], "accepted": True})
             m.refresh_from_db()
             self.assertEqual(m.accepted, True)
-            # self.assertEqual(m.date_accepted, None)
             
-            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("meme_view", args=(m.pk,)))
+            response = self.client.post(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": True, "msg": messages[0], "accepted": False})
             m.refresh_from_db()
             self.assertEqual(m.accepted, False)
-            # self.assertEqual(m.date_accepted, None)
 
-    def test_visibility_change_normal_user(self):
+    def test_acceptance_change_normal_user(self):
         '''Check if normal can change acceptance'''
         self.client.login(**self.user_data)
 
@@ -193,37 +194,36 @@ class TestMemeModelAcceptanceChange(TestCase):
             self.assertEqual(m.accepted, False)
             self.assertEqual(m.date_accepted, None)
 
-            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("index"))
+            response = self.client.post(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": False, "msg": "No permission!"})
             m.refresh_from_db()
             self.assertEqual(m.accepted, False)
             self.assertEqual(m.date_accepted, None)
 
 
-            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("index"))
+            response = self.client.post(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": False, "msg": "No permission!"})
             m.refresh_from_db()
             self.assertEqual(m.accepted, False)
             self.assertEqual(m.date_accepted, None)
 
 
 
-    def test_visibility_change_normal_user(self):
+    def test_acceptance_change_anonymous_user(self):
         '''Check if anonymous can change acceptance'''
-
         memes = Meme.objects.all()
         for m in memes:
             self.assertEqual(m.accepted, False)
             self.assertEqual(m.date_accepted, None)
             
-            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("index"))
+            response = self.client.post(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": False, "msg": "No permission!"})
             m.refresh_from_db()
             self.assertEqual(m.accepted, False)
             self.assertEqual(m.date_accepted, None)
 
-            response = self.client.get(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
-            self.assertRedirects(response, reverse("index"))
+            response = self.client.post(reverse("meme_acceptance_change", args=(m.pk,)), follow=True)
+            self.assertJSONEqual(response.content, {"success": False, "msg": "No permission!"})
             m.refresh_from_db()
             self.assertEqual(m.accepted, False)
             self.assertEqual(m.date_accepted, None)
