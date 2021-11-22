@@ -1,4 +1,5 @@
 from logging import log
+from django.http.response import Http404
 from django.shortcuts import redirect, render
 from django.urls.base import reverse
 from django.views.generic.detail import DetailView
@@ -30,8 +31,6 @@ def my_profile(request):
     return render(request, "users/user_profile.html", context)
 
 
-
-
 #signed in users wont see sign up view
 @user_passes_test(lambda user: user.is_anonymous, redirect_field_name="index")
 def signup_view(request):
@@ -49,6 +48,7 @@ def signup_view(request):
             return redirect(reverse("profile", args=(user.login,)))
     return render(request, "users/signup.html", {"form": form})
 
+
 @login_required()
 def edit_view(request):
     '''Proile edit view'''
@@ -65,30 +65,31 @@ def edit_view(request):
     return render(request, "users/user_profile_edit.html", context)
 
 
-#TODO: AJAX
 def user_karma_change(request, login) -> JsonResponse:
-    if request.user.is_authenticated:
-        MyUserModel = get_user_model()
-        sender = get_user(request)
-    
-        recipient = get_object_or_404(klass=MyUserModel, login=login)
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            MyUserModel = get_user_model()
+            sender = get_user(request)
+        
+            recipient = get_object_or_404(klass=MyUserModel, login=login)
 
-        if recipient == sender:
-            return JsonResponse({"success": False, "msg": "No self voting!"})
+            if recipient == sender:
+                return JsonResponse({"success": False, "msg": "No self voting!"})
 
-        try:
-            given_karma = Karma.objects.get(sender=sender, recipient=recipient) #recipient was previously given karma point by sender
-            given_karma.delete()
-            recipient.karma -= 1
-            recipient.save()
-            return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": False, "msg": "Successfully taken karma away!"})
-        except Karma.DoesNotExist:
-            #recipient wasnt given karma point by sender
-            karma = Karma(sender=sender, recipient=recipient)
-            karma.save()
-            recipient.karma += 1
-            recipient.save()
-            return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": True, "msg": "Successfully given karma!"})
+            try:
+                given_karma = Karma.objects.get(sender=sender, recipient=recipient) #recipient was previously given karma point by sender
+                given_karma.delete()
+                recipient.karma -= 1
+                recipient.save()
+                return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": False, "msg": "Successfully taken karma away!"})
+            except Karma.DoesNotExist:
+                #recipient wasnt given karma point by sender
+                karma = Karma(sender=sender, recipient=recipient)
+                karma.save()
+                recipient.karma += 1
+                recipient.save()
+                return JsonResponse({"success": True, "karma": recipient.karma, "karma_given": True, "msg": "Successfully given karma!"})
+        else:
+            return JsonResponse({"success": False, "msg": "Login to vote!"})
     else:
-        return JsonResponse({"success": False, "msg": "Login to vote!"})
-
+        raise Http404()
