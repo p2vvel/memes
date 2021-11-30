@@ -27,6 +27,7 @@ urlpatterns = [
     path("fresh/", FreshMemeView.as_view(), name="fresh_index"),
     path("fresh/page/<int:page>/", FreshMemeView.as_view(), name="fresh_memes"),
     path("meme_add/", MemeAdd.as_view(), name="meme_add"),
+    #identyfy meme by slug not pk:
     path("meme/<int:pk>/", MemeView.as_view(), name="meme_view"),
     path("meme/<int:pk>/karma/", karma_change, name="meme_karma_change"),
     path("meme/<int:pk>/visibility/", visibility_change, name="meme_visibility_change"),

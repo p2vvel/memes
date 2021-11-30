@@ -25,6 +25,7 @@ urlpatterns = [
     path("", include("memes_app.urls")),
     path("users/", include("users.urls")),
     path('admin/', admin.site.urls),
+    path('comments/', include("comments.urls")),
     # path("", lambda request: render(resquest, "index.html"), name="index"),
 ]
 

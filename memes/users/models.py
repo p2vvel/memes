@@ -27,6 +27,9 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+    # def get_by_natural_key(self, username: str):
+        # return super().get_by_natural_key(username)
+        # return self.get(login=username)
 
 
 def upload_avatar(instance, filename):
@@ -75,6 +78,9 @@ class MyUser(AbstractBaseUser):
             print("User profile already deleted")
         super().delete(args, kwargs)
 
+    def natural_key(self) -> str:
+        #used for serialization in comment model
+        return self.login#super().natural_key()
 
 class Karma(models.Model):
     date_created    = models.DateTimeField(auto_now_add=True)

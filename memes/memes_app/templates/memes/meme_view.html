@@ -48,8 +48,17 @@ karma_button.addEventListener("click", () => {
     {% if user.is_authenticated %}
         <button id="karma_button">Karma {{meme.karma}}</button>
         {% comment %} <a href={% url "meme_karma_change" pk=meme.pk %}><button>+</button></a> {% endcomment %}
+
+        <form method="POST">
+            {% csrf_token %}
+            {{form}}
+            <input type="submit">
+        </form>
+
     {% endif %}
 </div>
+
+
 
 
 

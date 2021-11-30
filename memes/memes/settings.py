@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    "comments",
     "memes_app",
     "users",
     'django.forms', #necessary to enable custom form widgets 

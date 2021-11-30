@@ -13,23 +13,24 @@ class Comment(models.Model):
     content         = models.CharField(max_length=12000, null=False, blank=False)
     karma           = models.IntegerField(verbose_name="Karma points", default=0, blank=True, null=False)
     hidden          = models.BooleanField(null=False, default=False)
+    parent_comment  = models.ForeignKey(to='self', default=None, null=True, on_delete=models.CASCADE)
     comment_object  = None  #define in child classes! Variable storing reference to commented thing (e.g. meme or user)
-
+    
     class Meta:
         abstract = True
 
 class CommentKarma(models.Model):
     '''Base class for Comments Karma. Might be later used for comments different than users one'''
     date_created    = models.DateTimeField(auto_now_add=True, null=False)
-    sender          = models.ForeignKey(to=get_user_model(), null=False)
-    karma_object    = None #define in child classes! Variable storing reference to rated comment
+    sender          = models.ForeignKey(to=get_user_model(), null=False, on_delete=models.CASCADE) #TODO: handle karma point change on user account delete
+    comment         = None #define in child classes! Variable storing reference to rated comment
 
     class Meta:
         abstract = True
 
 class MemeComment(Comment):
-    comment_object  = models.ForeignKey(to=Meme, null=False)
+    comment_object  = models.ForeignKey(to=Meme, null=False, on_delete=models.CASCADE)
 
 class MemeCommentKarma(CommentKarma):
-    karma_object    = models.ForeignKey(to=MemeComment, null=False)
+    comment         = models.ForeignKey(to=MemeComment, null=False, on_delete=models.CASCADE)
 

@@ -20,6 +20,8 @@ from django.urls.base import reverse
 from django.http import JsonResponse
 from django.utils import timezone
 
+
+from comments.forms import MemeCommentForm
 # Create your views here.
 
 
@@ -80,6 +82,11 @@ class MemeView(DetailView):
     model = Meme
     context_object_name = "meme"
     template_name = "memes/meme_view.html"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = MemeCommentForm()
+        return context
+    
 
 
 def karma_change(request, pk):
