@@ -12,6 +12,7 @@ from django.conf import settings
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
 
+
 from .utils import add_watermark, get_normal_image, resize_image
 from pathlib import Path
 
@@ -19,8 +20,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 
 
-
-
+from django.apps import apps
 
 def upload_meme_original(instance, filename):
     new_filename = uuid.uuid4()
@@ -82,6 +82,11 @@ class Meme(models.Model):
         else:
             raise ValidationError({"original_image": "No image uploaded!"})
 
+    @property
+    def comments_count(self):
+        '''Returns amount of comment for a meme'''
+        MemeComment = apps.get_model('comments', 'MemeComment')
+        return MemeComment.objects.filter(comment_object=self).count()
 
 class MemeKarma(models.Model):
     date_created    = models.DateTimeField(auto_now_add=True)
