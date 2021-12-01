@@ -1,8 +1,13 @@
+from typing import ByteString
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 import os
 import uuid
+
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import File
 
 # Create your models here.
 
@@ -27,13 +32,10 @@ class MyUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    # def get_by_natural_key(self, username: str):
-        # return super().get_by_natural_key(username)
-        # return self.get(login=username)
 
 
 def upload_avatar(instance, filename):
-    ext = ext=os.path.splitext(filename)[1]
+    ext = ".jpg"#saving all avatars in JPEG format    #ext=os.path.splitext(filename)[1]
     new_filename = uuid.uuid4()
     return "avatars/{filename}{ext}".format(filename=new_filename, ext=ext)
 
@@ -70,7 +72,7 @@ class MyUser(AbstractBaseUser):
     def is_staff(self):
         return self.is_superuser
 
-    def delete(self, args, **kwargs):
+    def delete(self, *args, **kwargs):
         '''Remember about deleting'''
         try:
             os.remove(self.profile_img.path)
@@ -81,6 +83,18 @@ class MyUser(AbstractBaseUser):
     def natural_key(self) -> str:
         #used for serialization in comment model
         return self.login#super().natural_key()
+
+
+    def save(self, *args, **kwargs):
+        '''Resizing profile picture'''
+        if self.profile_img:
+            avatar = Image.open(self.profile_img).convert("RGB")
+            avatar.thumbnail((200, 200))
+            buffer = BytesIO()
+            avatar.save(buffer, name=self.profile_img.name, format="JPEG")
+            self.profile_img = File(buffer, name = self.profile_img.name)
+        return super().save(*args, **kwargs)
+        
 
 class Karma(models.Model):
     date_created    = models.DateTimeField(auto_now_add=True)
