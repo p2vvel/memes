@@ -34,8 +34,17 @@ class MainMemeView(ListView):
     ordering = ["-date_accepted"]
 
     def get_queryset(self):
+        user = get_user(self.request)
         data = super().get_queryset()
-        return data.filter(accepted=True, hidden=False)
+        data =  data.filter(accepted=True, hidden=False)
+        if self.request.user.is_authenticated:
+            for k in data:
+                k.karma_given = k.is_karma_given(user)
+        else:
+            for k in data:
+                k.karma_given = False
+
+        return data
         # data = (self.model.objects.all()
         #     .order_by(*self.ordering)
         #     .filter(accepted=False))
@@ -52,13 +61,43 @@ class FreshMemeView(MainMemeView):
     template_name = "memes/fresh_view.html"
     ordering = ["-date_created"]
     def get_queryset(self):
+        user = get_user(self.request)
         data = super(ListView, self).get_queryset()
-        return data.filter(accepted=False, hidden=False)
-        # data = (self.model.objects.all()
-        #     .order_by(*self.ordering)
-        #     .filter(accepted=False, hidden=False))
-        # return data
+        data = data.filter(accepted=False, hidden=False)
+        if self.request.user.is_authenticated:
+            for k in data:
+                k.karma_given = k.is_karma_given(user)
+        else:
+            for k in data:
+                k.karma_given = False
+        return data
 
+class MemeView(DetailView):
+    model = Meme
+    context_object_name = "meme"
+    template_name = "memes/meme_view.html"
+
+    def get_queryset(self):
+        # user = get_user(self.request)
+        data = super().get_queryset()
+        # if self.request.user.is_authenticated:
+        #     for k in data:
+        #         k.karma_given = k.is_karma_given(user)
+        # else:
+        #     for k in data:
+        #         k.karma_given = False
+        return data
+
+    def get_context_data(self, **kwargs):
+        user = get_user(self.request)
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context["meme"].karma_given = context["meme"].is_karma_given(user)
+        else:
+            context["meme"].karma_given = False
+        context["form"] = MemeCommentForm()
+        return context
+    
 
 class MemeAdd(View):
     @method_decorator(login_required)
@@ -78,15 +117,7 @@ class MemeAdd(View):
         return redirect("index")
 
 
-class MemeView(DetailView):
-    model = Meme
-    context_object_name = "meme"
-    template_name = "memes/meme_view.html"
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["form"] = MemeCommentForm()
-        return context
-    
+
 
 
 def karma_change(request, pk):

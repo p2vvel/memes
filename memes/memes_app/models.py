@@ -88,6 +88,17 @@ class Meme(models.Model):
         MemeComment = apps.get_model('comments', 'MemeComment')
         return MemeComment.objects.filter(comment_object=self).count()
 
+    def is_karma_given(self, user: get_user_model()):
+        '''Returns True if user gave karma else False'''
+        try:
+            given_karma = MemeKarma.objects.get(user=user, meme=self)
+            return True
+        except MemeKarma.DoesNotExist:
+            #meme wasnt given karma point by user
+            given_karma = MemeKarma(user=user, meme=self)
+            return False
+
+
 class MemeKarma(models.Model):
     date_created    = models.DateTimeField(auto_now_add=True)
     meme            = models.ForeignKey(to=Meme, on_delete=models.CASCADE, null=False)
