@@ -77,16 +77,6 @@ class MemeView(DetailView):
     context_object_name = "meme"
     template_name = "memes/meme_view.html"
 
-    def get_queryset(self):
-        # user = get_user(self.request)
-        data = super().get_queryset()
-        # if self.request.user.is_authenticated:
-        #     for k in data:
-        #         k.karma_given = k.is_karma_given(user)
-        # else:
-        #     for k in data:
-        #         k.karma_given = False
-        return data
 
     def get_context_data(self, **kwargs):
         user = get_user(self.request)
