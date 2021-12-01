@@ -85,9 +85,14 @@ class MyUser(AbstractBaseUser):
         return self.login#super().natural_key()
 
 
+    def __init__(self, *args, **kwargs):
+        super(MyUser, self).__init__(*args, **kwargs)
+        self.old_profile_img = self.profile_img #pre_save signal isnt received at creation
+
     def save(self, *args, **kwargs):
         '''Resizing profile picture'''
-        if self.profile_img:
+        #old_profile_img is set in signals.py at pre_save
+        if self.profile_img and self.profile_img != self.old_profile_img:
             avatar = Image.open(self.profile_img).convert("RGB")
             avatar.thumbnail((200, 200))
             buffer = BytesIO()
