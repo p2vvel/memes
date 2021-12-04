@@ -114,7 +114,7 @@ class TestReplyCommentAdd(TestCase):
             response = self.client.post(reverse("add_reply_comment", args=(c.pk,)), {"content": "Reply comment %s :)" % k})
             self.assertEqual(response.status_code, 200)
             self.assertJSONEqual(response.content, {"success": True, "msg": "Succesfully added new comment"})
-            new_comment = MemeComment.objects.all().order_by("-date_added")[0]
+            new_comment = MemeComment.objects.all().order_by("-date_created")[0]
             self.assertEqual(new_comment.content, "Reply comment %s :)" % k)
             self.assertEqual(new_comment.original_poster, get_user(self.client))
             self.assertEqual(new_comment.parent_comment, c)
@@ -142,7 +142,7 @@ class TestReplyCommentAdd(TestCase):
             response = self.client.post(reverse("add_reply_comment", args=(comments[-1].pk, )), {"content": "First level"})
             self.assertEqual(response.status_code, 200)
             self.assertJSONEqual(response.content, {"success": True, "msg": "Succesfully added new comment"})
-            comments.append(MemeComment.objects.all().order_by("-date_added")[0])
+            comments.append(MemeComment.objects.all().order_by("-date_created")[0])
             self.assertEqual(comments[-1].parent_comment, comment)
 
         

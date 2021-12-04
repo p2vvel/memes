@@ -37,6 +37,7 @@ class TestCommentsFetch(TestCase):
             new_meme.date_accepted = timezone.now()
             new_meme.save()
 
+
     def test_comments_new(self):
         '''Tests if sorting comments works'''
         meme = Meme.objects.all()[0]
@@ -64,9 +65,10 @@ class TestCommentsFetch(TestCase):
         
 
         response = self.client.post("%s?sort=new" % reverse("get_meme_comment", args=(meme.pk,)))
-        
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([k[0] for k in comments_content], [k["fields"]["content"] for k in json.loads(json.loads(response.content))])
+        data = json.loads(response.content)
+        self.assertEqual([k[0] for k in comments_content], [k["fields"]["content"] for k in data["comments"]])
+
 
     def test_comments_new_no_sort_paramater(self):
         '''Tests if sorting comments works, no sort parameter in url specified'''
@@ -95,10 +97,9 @@ class TestCommentsFetch(TestCase):
         
 
         response = self.client.post("%s" % reverse("get_meme_comment", args=(meme.pk,)))
-        
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([k[0] for k in comments_content], [k["fields"]["content"] for k in json.loads(json.loads(response.content))])
-
+        data = json.loads(response.content)
+        self.assertEqual([k[0] for k in comments_content], [k["fields"]["content"] for k in data["comments"]])
 
 
     def test_comments_best_sort(self):
@@ -144,9 +145,9 @@ class TestCommentsFetch(TestCase):
         
 
         response = self.client.post("%s?sort=best" % reverse("get_meme_comment", args=(meme.pk,)))
-        
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([k[0] for k in comments_sorted_content], [k["fields"]["content"] for k in json.loads(json.loads(response.content))])
+        data = json.loads(response.content)
+        self.assertEqual([k[0] for k in comments_sorted_content], [k["fields"]["content"] for k in data["comments"]])
 
 
     def test_comments_best_sort_same_karma(self):
@@ -179,9 +180,9 @@ class TestCommentsFetch(TestCase):
         
 
         response = self.client.post("%s?sort=best" % reverse("get_meme_comment", args=(meme.pk,)))
-        
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([k[0] for k in comments_content], [k["fields"]["content"] for k in json.loads(json.loads(response.content))])
+        data = json.loads(response.content)
+        self.assertEqual([k[0] for k in comments_content], [k["fields"]["content"] for k in data["comments"]])
 
 
     def test_comments_new_sort_same_time(self):
@@ -195,23 +196,25 @@ class TestCommentsFetch(TestCase):
             ("Marik1234, im back", None, 360),
             ("With friends", 3, 0),
             ("Polska gurom hehe", 3, 0),
+
             ("litosci", None, 0),
+            
             (":(((", None, 0),
-            ]
+        ]
 
         comments_sorted_content = [
             ("Marik1234, im back", None, 360),
             ("With friends", 3, 0),
             ("Polska gurom hehe", 3, 0),
             
-            ("litosci", None, 250),
-
             ("Hehe :-)", None, 120),
             (":-|", 0, 90),
             ("Not hehe >:-(", 0, 0),
 
+            ("litosci", None, 0),
+            
             (":(((", None, 0),
-            ]
+        ]
 
 
         self.client.login(**self.new_user_data)
@@ -235,7 +238,9 @@ class TestCommentsFetch(TestCase):
         
 
         response = self.client.post("%s?sort=new" % reverse("get_meme_comment", args=(meme.pk,)))
-        
         self.assertEqual(response.status_code, 200)
-        self.assertEqual([k[0] for k in comments_content], [k["fields"]["content"] for k in json.loads(json.loads(response.content))])
-
+        data = json.loads(response.content)
+        response_data = [k[0] for k in comments_sorted_content]
+        
+        my_data = [k["fields"]["content"] for k in data["comments"]]
+        self.assertEqual(response_data, my_data)

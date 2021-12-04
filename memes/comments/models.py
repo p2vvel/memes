@@ -7,7 +7,7 @@ from memes_app.models import Meme
 
 class Comment(models.Model):
     '''Base class for comments. Might be later used to leave comments about e.g. users'''
-    date_added      = models.DateTimeField(auto_now_add=True)
+    date_created      = models.DateTimeField(auto_now_add=True)
     date_edited     = models.DateTimeField(auto_now=True)   #if date_added != date_edited => comment was edited
     original_poster = models.ForeignKey(to=get_user_model(), default=None, null=True, on_delete=models.SET_NULL)
     content         = models.CharField(max_length=12000, null=False, blank=False)

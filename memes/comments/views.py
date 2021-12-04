@@ -13,6 +13,8 @@ from comments.forms import MemeCommentForm
 from memes_app.models import Meme
 # Create your views here.
 
+import json
+
 
 #TODO: limit comments adding to avoid spam
 class AddMemeComment(View):
@@ -103,14 +105,17 @@ class GetMemeComments(View):
         sort = request.GET.get("sort", default="new")
         
         if sort == "best":
-            base_comments = MemeComment.objects.filter(parent_comment=None).order_by("-karma", "date_added")
+            base_comments = MemeComment.objects.filter(parent_comment=None, comment_object=meme).order_by("-karma", "date_created")
         else:   #if sort == "new"
-            base_comments = MemeComment.objects.filter(parent_comment=None).order_by("date_added")
+            base_comments = MemeComment.objects.filter(parent_comment=None, comment_object=meme).order_by("date_created", "-karma")
 
         comments_data = []
         for base_comm in base_comments:
             comments_data.append(base_comm)
-            for reply_comm in base_comm.memecomment_set.all().order_by("date_added"):
+            for reply_comm in base_comm.memecomment_set.all().order_by("date_created", "-karma"):
                 comments_data.append(reply_comm)
 
-        return JsonResponse(serializers.serialize("json", comments_data,  use_natural_foreign_keys=True), safe=False)
+
+        serialized_comments = json.loads(serializers.serialize("json", comments_data,  use_natural_foreign_keys=True))
+        data = {"success": True, "comments_count": meme.comments_count, "comments": serialized_comments}
+        return JsonResponse(data, safe=False)
