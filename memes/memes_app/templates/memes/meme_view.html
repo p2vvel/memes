@@ -41,7 +41,7 @@
                             <img class="img-fluid img-thumbnail" style="max-height: 50px" src="{% static "images/watermark.png" %}">
                         {% endif %}
                         
-                        <a class="link-danger text-decoration-none btn stretched-link" href="/users/profile/{{meme.original_poster.login}}">
+                        <a class="link-dark text-decoration-none btn stretched-link" href="/users/profile/{{meme.original_poster.login}}">
                             {{meme.original_poster.login}}
                         </a>
                     </div>
@@ -108,7 +108,7 @@
 
 
 
-<form method="POST" style="border: 2px solid red">
+<form method="POST" action="{% url "add_meme_comment" pk=meme.pk %}" style="border: 2px solid red">
     {% csrf_token %}
     {{form}}
     <input type="submit">

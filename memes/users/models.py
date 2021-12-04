@@ -82,7 +82,12 @@ class MyUser(AbstractBaseUser):
 
     def natural_key(self) -> str:
         #used for serialization in comment model
-        return self.login#super().natural_key()
+        if self.profile_img:
+            key = (self.login, self.profile_img.url)
+        else:
+            key = (self.login, False)
+        return key
+            # return (self.login#super().natural_key()
 
 
     def __init__(self, *args, **kwargs):

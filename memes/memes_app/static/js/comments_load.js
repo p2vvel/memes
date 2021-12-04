@@ -38,7 +38,8 @@ window.addEventListener("load", function () {
                 if (data.success) {
                     //append comments to comments_box div
                     for (let comm of data.comments) {
-                        let user = comm.fields.original_poster;
+                        let user_login = comm.fields.original_poster[0];
+                        let user_avatar = comm.fields.original_poster[1] ? comm.fields.original_poster[1] :  "/static/images/watermark.png";
                         let pk = comm.fields.pk;
                         let content = comm.fields.content;
                         let date_created = new Date(comm.fields.date_created);
@@ -50,11 +51,16 @@ window.addEventListener("load", function () {
                             minute: 'numeric', // numeric, 2-digit
                         });
 
-                        let comment_template = `<div class="card" style="width: 18rem;">
+                        let comment_template = `<div class="card my-1" >
                         <div class="card-body">
-                          <h6 class="card-title">${user}</h6>
-                          <p class="card-subtitle mb-2 text-muted">${date_printed}</p>
-                          <p class="card-text">${content}</p>
+                            <div class="d-flex justify-content-start media position-relative">
+                                <img src="${user_avatar}" alt="${user_login} avatar" class="img-thumbnail img-fluid" style="max-height: 50px;">
+                                <div class="d-flex flex-column ms-2">
+                                    <h6 class="card-title"><a href="/users/profile/${user_login}" class="stretched-link link-dark text-decoration-none">${user_login}<a/></h6>
+                                    <p class="card-subtitle mb-2 text-muted">${date_printed}</p>
+                                </div>
+                            </div>
+                            <p class="card-text">${content}</p>
                         </div>
                       </div>`
 
