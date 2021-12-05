@@ -28,9 +28,12 @@ class CommentKarma(models.Model):
     class Meta:
         abstract = True
 
+
 class MemeComment(Comment):
     comment_object  = models.ForeignKey(to=Meme, null=False, on_delete=models.CASCADE)
 
+
+#TODO: add negative karma for comments
 class MemeCommentKarma(CommentKarma):
     comment         = models.ForeignKey(to=MemeComment, null=False, on_delete=models.CASCADE)
 

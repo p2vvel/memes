@@ -67,6 +67,7 @@ class AddReplyComment(View):
             raise Http404()
 
 
+#TODO: add controls to template
 def change_meme_comment_karma(self, request, pk):
     if request.method == "POST":
         if request.user.is_authenticated:
