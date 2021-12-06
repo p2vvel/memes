@@ -10,7 +10,7 @@
     var csrf_token = "{{csrf_token}}";
 </script>
 <script src="{% static "js/karma_change.js" %}"></script> 
-<script src="{% static "js/comments_load.js" %}"></script> 
+<script src="{% static "js/comments_script.js" %}"></script> 
 
 
 
@@ -79,8 +79,10 @@
     </div>
     </div>
 
-    
-    
+
+
+
+
     <div id="comment_section">
         <div id="comments_dashboard" >
             <div class="d-flex justify-content-between">
@@ -97,16 +99,15 @@
                     <button class="btn btn-outline-secondary comments_button" value="best">Best</button>
                 </div>
             </div>
-            <form method="POST" action="{% url "add_meme_comment" pk=meme.pk %}" style="border: 2px solid red">
-                {% csrf_token %}
-                {{form}}
-                <input type="submit">
-            </form>     
+            <form method="POST" class="comments_add_form d-flex justify-content-between">
+                {% comment %} {% csrf_token %} {% endcomment %}
+                <input type="hidden" name="parent" value="">
+                <textarea name="content" maxlength="12000" placeholder="Comment..." class="flex-fill me-1 my-2" style="resize: vertical;"></textarea>
+                <input type="submit" class="btn btn-outline-success ms-1 my-2">
+            </form>
         </div>
         <div class="d-flex flex-column justify-content-center align-items-center">
-            <button id="comments_button" class="btn btn-secondary" value="{{meme.pk}}">
-                Loading...
-            </button>
+           
             <div class="spinner-border my-4" role="status" id="comments_spinner">
               <span class="visually-hidden">Loading...</span>
             </div>
@@ -130,58 +131,3 @@
 
 
 {% endblock content %}
-
-
-{% comment %} <script>
-window.addEventListener('load', () =>{
-
-let url ="{% url 'meme_karma_change' pk=meme.pk %}";
-let karma_button = document.querySelector("#karma_button");
-
-karma_button.addEventListener("click", () => {
-    let request = new Request(url, {headers: {"X-CSRFToken": "{{csrf_token}}"}});
-    fetch(request, {
-        method: "POST",
-        mode: "same-origin"
-    })
-    .then(response => {
-        if(response.ok)
-            return response.json();
-        else
-            throw Error(response.statusText);
-    })
-    .then(data => {
-        if (data.success)
-            karma_button.innerText = `Karma ${data.karma}`;
-        else
-            throw Error("Data NOT OK");
-    })
-    .catch(error => {
-        console.log(error.message);
-    });
-
-    });
-});
-</script>
-
-
-
-
-
-<div class="meme">
-    <h3>{{meme.title}}</h3>
-    <img src={{meme.normal_image.url}} alt="Meme img">
-    <p>{{meme.description}}</p>
-    {% if user.is_authenticated %}
-        <button id="karma_button">Karma {{meme.karma}}</button>
-
-
-    {% endif %}
-</div> {% endcomment %}
-
-
-
-
-
-
-
