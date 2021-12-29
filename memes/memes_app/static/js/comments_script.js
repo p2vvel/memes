@@ -1,13 +1,12 @@
 window.addEventListener("load", function () {
 
 
-
     let comments_section = document.querySelector("#comments_section");
     let meme_pk_value = document.querySelector("#meme_pk_value");
     let comments_buttons = document.querySelectorAll(".comments_button");
     let comments_spinner = document.querySelector("#comments_spinner");
     let comments_box = document.querySelector("#comments_box");
-    let comment_add_forms = document.querySelectorAll(".comments_add_form");
+    // let comment_add_forms = document.querySelectorAll(".comments_add_form");
 
 
     comments_spinner.style.display = "none";
@@ -15,27 +14,29 @@ window.addEventListener("load", function () {
 
     //load comments at start
     load_comments(meme_pk_value.value, "new");
-    
 
-
+    //eventy podpiete pod przyciski do ladowania komentarzy
     comments_buttons.forEach(button => button.addEventListener("click", function () {
         load_comments(meme_pk_value.value, button.value);
     }));
 
 
-    comment_add_forms.forEach(form => form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        let meme = meme_pk_value.value;
-        let parent = form.querySelector("[name=parent]").value;
-        let content = form.querySelector("[name=content]").value;
-        add_comment(meme, parent, content);
-    }));
-
+    //event do dodawania komentarzy
+    comments_section.addEventListener("submit", function (e) {
+        if (e.target.classList.contains("comments_add_form")) {
+            e.preventDefault();
+            let form = e.target;
+            let meme = meme_pk_value.value;
+            let parent = form.querySelector("[name=parent]").value;
+            let content = form.querySelector("[name=content]").value;
+            add_comment(meme, parent, content);
+        }
+    });
 
 
     function load_comments(meme_pk, sort_style = "new") {
         let url = `/comments/meme/${meme_pk}/?sort=${sort_style}"`;
-        let request = new Request(url, { headers: { "X-CSRFToken": csrf_token } });
+        let request = new Request(url, {headers: {"X-CSRFToken": csrf_token}});
         //turn on comments loading animation
         comments_spinner.style.display = "block";
 
@@ -70,7 +71,7 @@ window.addEventListener("load", function () {
                             hour: 'numeric', // numeric, 2-digit
                             minute: 'numeric', // numeric, 2-digit
                         });
-                        let parent_margin = Boolean(comm.fields.parent_comment);    //indicates if comment should be displayed as reply (margin at left) 
+                        let parent_margin = Boolean(comm.fields.parent_comment);    //indicates if comment should be displayed as reply (margin at left)
 
                         let comment_template = `<div class="card my-1 ${parent_margin ? "ms-5" : ""}" id=${`comment_${pk}`}>
                             <div class="card-body">
@@ -106,36 +107,23 @@ window.addEventListener("load", function () {
 
                         let new_comment = document.createElementFromString(comment_template, "text/html");
                         comments_box.appendChild(new_comment);
-                    };
+                    }
 
-                    //add events to new reply forms (added after load, so initial event adding doesnt affected them)
-                    document.querySelectorAll(".comments_add_form").forEach(form => form.addEventListener("submit", function (e) {
-                        console.log("DODAJEM hehe");
-                        e.preventDefault();
-                        let meme = meme_pk_value.value;
-                        let parent = form.querySelector("[name=parent]").value;
-                        let content = form.querySelector("[name=content]").value;
-                        add_comment(meme, parent, content);
-                    }));
-                }
-                else {
+                } else {
                     throw Error("Data NOT OK");
                 }
             })
             .catch(error => {
                 console.log(error.message);
             });
-    };
-
+    }
 
 
     function add_comment(meme_pk, parent_pk, content) {
-        let url = (parent_pk == "" ? `/comments/meme/${meme_pk}/add/` : `/comments/comment/${parent_pk}/add/`);
-        console.log(url);
-        let request = new Request(url, { headers: { "X-CSRFToken": csrf_token } });
+        let url = (parent_pk === "" ? `/comments/meme/${meme_pk}/add/` : `/comments/comment/${parent_pk}/add/`);
+        let request = new Request(url, {headers: {"X-CSRFToken": csrf_token}});
         let form_data = new FormData();
         form_data.append("content", content);
-
 
         fetch(request, {
             method: "POST",
@@ -149,26 +137,21 @@ window.addEventListener("load", function () {
                     throw Error(response.statusText);
             })
             .then(data => {
-                console.log(data)
                 if (data.success) {
-                    console.log("Success");
                     load_comments(meme_pk, "new");
-                }
-                else {
+                } else {
                     throw Error("Data NOT OK");
                 }
             })
             .catch(error => {
                 console.log(error.message);
             });
-    };
-
+    }
 
 
     //copied from: https://stackoverflow.com/a/45784892/16626390
     Document.prototype.createElementFromString = function (str) {
         const element = new DOMParser().parseFromString(str, 'text/html');
-        const child = element.documentElement.querySelector('body').firstChild;
-        return child;
+        return element.documentElement.querySelector('body').firstChild;
     };
 });
