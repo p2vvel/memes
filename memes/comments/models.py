@@ -22,8 +22,9 @@ class Comment(models.Model):
 class CommentKarma(models.Model):
     '''Base class for Comments Karma. Might be later used for comments different than users one'''
     date_created    = models.DateTimeField(auto_now_add=True, null=False)
-    sender          = models.ForeignKey(to=get_user_model(), null=False, on_delete=models.CASCADE) #TODO: handle karma point change on user account delete
+    user          = models.ForeignKey(to=get_user_model(), null=False, on_delete=models.CASCADE) #TODO: handle karma point change on user account delete
     comment         = None #define in child classes! Variable storing reference to rated comment
+    positive        = models.BooleanField(verbose_name="Positive Comment", default=True, null=False) #indicates if karma is positive (+1 or -1 to total karma count)
 
     class Meta:
         abstract = True

@@ -40,6 +40,7 @@ class TestKarmaSystem(TestCase):
             delilah.refresh_from_db()
             self.assertEqual(delilah.karma, k)
 
+
     def test_karma_reverse(self):
         '''User should be able to give karma to each other'''
         jerry = get_user_model().objects.get(login="jerry")
@@ -66,6 +67,7 @@ class TestKarmaSystem(TestCase):
             self.assertEqual(jerry.karma, y)
             self.client.logout()
 
+
     def test_karma_self(self):
         '''User shouldnt be able to give karma itself'''
         jerry = get_user_model().objects.get(login="jerry")
@@ -75,6 +77,7 @@ class TestKarmaSystem(TestCase):
         self.assertJSONEqual(response.content, {"success": False, "msg": "No self voting!"})
         jerry.refresh_from_db()
         self.assertEqual(jerry.karma, 0)
+
 
     def test_karma_404(self):
         '''No karma for not existing user'''

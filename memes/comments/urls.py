@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.urls import path
 
-from .views import AddMemeComment, AddReplyComment, GetMemeComments
+from .views import AddMemeComment, AddReplyComment, GetMemeComments, change_meme_comment_karma
 
 
 
@@ -24,4 +24,5 @@ urlpatterns = [
     path("meme/<int:pk>/", GetMemeComments.as_view(), name="get_meme_comment"),
     path("meme/<int:pk>/add/", AddMemeComment.as_view(), name="add_meme_comment"),
     path("comment/<int:pk>/add/", AddReplyComment.as_view(), name="add_reply_comment"),
+    path("comment/<int:pk>/karma/", change_meme_comment_karma, name="comment_karma_change"),
 ]

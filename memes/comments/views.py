@@ -66,39 +66,6 @@ class AddReplyComment(View):
         else:
             raise Http404()
 
-
-#TODO: add controls to template
-def change_meme_comment_karma(self, request, pk):
-    if request.method == "POST":
-        if request.user.is_authenticated:
-            comment = get_object_or_404(MemeComment, pk=pk)
-            user = get_user(request)
-
-            try:
-                given_karma = MemeCommentKarma.objects.get(user=user, comment=comment)
-                given_karma.delete()
-                comment.karma -= 1   
-                comment.save()
-                msg =  "Succesfully taken karma away!"
-                karma_given = False
-            except MemeCommentKarma.DoesNotExist:
-                #meme wasnt given karma point by user
-                given_karma = MemeCommentKarma(user=user,comment=comment)
-                given_karma.save()
-                comment.karma += 1
-                comment.save()
-                msg = "Succesfully fiven karma point"
-                karma_given = True
-
-            return JsonResponse({"success": True, "karma_given": karma_given, "karma": comment.karma, "msg": msg})
-        else:
-            return JsonResponse({"success": False, "msg": "No permission"})
-
-    else:
-        raise Http404()
-
-
-
 class GetMemeComments(View):
     def post(self, request, pk):
         '''Returns all comments for the meme'''
@@ -120,3 +87,43 @@ class GetMemeComments(View):
         serialized_comments = json.loads(serializers.serialize("json", comments_data,  use_natural_foreign_keys=True))
         data = {"success": True, "comments_count": meme.comments_count, "comments": serialized_comments}
         return JsonResponse(data, safe=False)
+
+
+#TODO: add controls to template
+def change_meme_comment_karma(request, pk):
+    if request.method == "POST":
+        if request.user.is_authenticated:
+            comment = get_object_or_404(MemeComment, pk=pk)
+            user = get_user(request)
+
+            positive = False if request.POST.get("positive") == "False" else True
+
+            try:
+                #comment karma already exist
+                given_karma = MemeCommentKarma.objects.get(user=user, comment=comment)
+                if positive == given_karma.positive:
+                    comment.karma += -1 if positive else 1  #if deleting positive comment, have to substract one karma point
+                    given_karma.delete()
+                    karma_given = 0
+                else:
+                    comment.karma += 2 if positive else -2   #adding karma with different sign means that you have to add or substract 2 (delete old karma and add news)
+                    given_karma.positive = not given_karma.positive
+                    given_karma.save()
+                    karma_given = 1 if positive else -1
+                comment.save()
+                msg =  "Succesfully changed karma!"
+            except MemeCommentKarma.DoesNotExist:
+                #meme wasnt given karma point by user
+                given_karma = MemeCommentKarma(user=user, comment=comment, positive=positive)
+                given_karma.save()
+                comment.karma += 1 if positive else -1
+                comment.save()
+                msg = "Succesfully changed karma!"
+                karma_given = 1 if positive else -1
+
+            return JsonResponse({"success": True, "karma_given": karma_given, "karma": comment.karma, "msg": msg})
+        else:
+            return JsonResponse({"success": False, "msg": "No permission"})
+
+    else:
+        raise Http404()
