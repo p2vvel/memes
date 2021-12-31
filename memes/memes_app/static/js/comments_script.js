@@ -63,6 +63,8 @@ window.addEventListener("load", function () {
                         let user_avatar = comm.fields.original_poster[1] ? comm.fields.original_poster[1] : "/static/images/watermark.png";
                         let pk = comm.pk;
                         let content = comm.fields.content;
+                        let karma = comm.fields.karma;
+
                         let date_created = new Date(comm.fields.date_created);
                         let date_printed = date_created.toLocaleString({
                             day: '2-digit', // numeric, 2-digit
@@ -73,6 +75,7 @@ window.addEventListener("load", function () {
                         });
                         let parent_margin = Boolean(comm.fields.parent_comment);    //indicates if comment should be displayed as reply (margin at left)
 
+                        //TODO: podepnij guziki od oceny komentarza pod eventy zeby dzialalo
                         let comment_template = `<div class="card my-1 ${parent_margin ? "ms-5" : ""}" id=${`comment_${pk}`}>
                             <div class="card-body">
                                 <div class="d-flex justify-content-start media position-relative">
@@ -81,10 +84,19 @@ window.addEventListener("load", function () {
                                         <h6 class="card-title"><a href="/users/profile/${user_login}" class=" link-dark text-decoration-none">${user_login}</a></h6>
                                         <p class="card-subtitle mb-2 text-muted">${date_printed}</p>
                                     </div>
-                                    <div class="d-flex justify-content-end flex-grow-1">
-                                        <a class="link-primary text-decoration-none" type="button" data-bs-toggle="collapse" data-bs-target="#comment_${pk}_reply_box" aria-expanded="false" aria-controls="comment_${pk}_reply_box">
+                                    <div class="d-flex justify-content-end flex-grow-1 align-items-center">
+                                        <a class="btn btn-outline-link btn-sm me-2" type="button" data-bs-toggle="collapse" data-bs-target="#comment_${pk}_reply_box" aria-expanded="false" aria-controls="comment_${pk}_reply_box">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-reply-fill" viewBox="0 0 16 16">
+                                                <path d="M5.921 11.9 1.353 8.62a.719.719 0 0 1 0-1.238L5.921 4.1A.716.716 0 0 1 7 4.719V6c1.5 0 6 0 7 8-2.5-4.5-7-4-7-4v1.281c0 .56-.606.898-1.079.62z"/>
+                                            </svg>        
                                             Reply
                                         </a>
+
+                                        <div class="btn-group" role="group" aria-label="Comment karma section">
+                                            <button type="button" class="btn btn-outline-success btn-sm"><b>+</b></button>
+                                            <button type="button" class="btn btn-outline-dark btn-sm" disabled><b>${karma}</b></button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm"><b>-</b></button>
+                                        </div>
                                     </div>
                                 </div>
                                 <p class="card-text">${content}</p>
