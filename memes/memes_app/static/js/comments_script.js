@@ -60,8 +60,6 @@ window.addEventListener("load", function () {
                 .then(data => {
                     if (data.success) {
                         let karma_given = data.karma_given;
-                        console.log(data);
-                        console.log(typeof(karma_given))
 
                         let positive_button = e.target.parentNode.querySelector(".comment-vote-positive");
                         let karma_info = e.target.parentNode.querySelector(".comment-karma-info");
@@ -90,8 +88,6 @@ window.addEventListener("load", function () {
                             positive_button.classList.add("btn-outline-success");
                             negative_button.classList.add("btn-outline-danger");
                         }
-
-                        console.log(data)
 
                     } else {
                         throw Error("Data NOT OK");
@@ -126,7 +122,6 @@ window.addEventListener("load", function () {
                 //turn off comments loading animation
                 comments_spinner.style.display = "none";
                 if (data.success) {
-                    console.log(data)
                     //clear old comments
                     comments_box.innerHTML = "";
 
@@ -167,9 +162,9 @@ window.addEventListener("load", function () {
                                         </a>
 
                                         <div class="btn-group" role="group" aria-label="Comment karma section">
-                                            <button type="button" class="comment-vote-positive btn ${karma_given === "1" ? "btn-success" : "btn-outline-success"} btn-sm" value="${pk}"><b>+</b></button>
+                                            <button type="button" class="font-weight-bold comment-vote-positive btn ${karma_given === "1" ? "btn-success" : "btn-outline-success"} btn-sm" value="${pk}">+</button>
                                             <button type="button" class="btn btn-outline-dark btn-sm" disabled><b class="comment-karma-info">${karma}</b></button>
-                                            <button type="button" class="comment-vote-negative btn ${karma_given === "-1" ? "btn-danger" : "btn-outline-danger"} btn-sm" value="${pk}"><b>-</b></button>
+                                            <button type="button" class="font-weight-bold comment-vote-negative btn ${karma_given === "-1" ? "btn-danger" : "btn-outline-danger"} btn-sm" value="${pk}">-</button>
                                         </div>
                                     </div>
                                 </div>
