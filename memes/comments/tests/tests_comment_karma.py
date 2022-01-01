@@ -41,7 +41,7 @@ class TestCommentKarma(TestCase):
 
     
         for k in [1, 0, 1, 0]:
-            response = self.client.post(reverse("comment_karma_change", args=(comment.pk,)), {"positive": True})
+            response = self.client.post(reverse("comment_karma_change", args=(comment.pk,)) + F"?positive={'True'}")
             self.assertJSONEqual(response.content, {"success": True, "karma_given": k, "karma": k, "msg": "Succesfully changed karma!"})
             comment.refresh_from_db()
             self.assertEqual(k, comment.karma)
@@ -53,7 +53,7 @@ class TestCommentKarma(TestCase):
         comment = MemeComment.objects.create(content="Hihi :)))", original_poster=get_user(self.client), comment_object=meme)
 
         for k in [-1, 0, -1, 0]:
-            response = self.client.post(reverse("comment_karma_change", args=(comment.pk,)), {"positive": False})
+            response = self.client.post(reverse("comment_karma_change", args=(comment.pk,)) + F"?positive={'False'}")
             self.assertJSONEqual(response.content, {"success": True, "karma_given": k, "karma": k, "msg": "Succesfully changed karma!"})
             comment.refresh_from_db()
             self.assertEqual(k, comment.karma)
@@ -65,10 +65,9 @@ class TestCommentKarma(TestCase):
         meme = Meme.objects.all()[0]
         comment = MemeComment.objects.create(content="Hihi :)))", original_poster=get_user(self.client), comment_object=meme)
 
-        
-        
+
         for k in [1, -1, 1, -1]:
-            response = self.client.post(reverse("comment_karma_change", args=(comment.pk,)), {"positive": False if k==-1 else True})
+            response = self.client.post(reverse("comment_karma_change", args=(comment.pk,)) + F"?positive={'True' if k==1 else 'False'}")
             self.assertJSONEqual(response.content, {"success": True, "karma_given": k, "karma": k, "msg": "Succesfully changed karma!"})
             comment.refresh_from_db()
             self.assertEqual(k, comment.karma)
@@ -82,7 +81,7 @@ class TestCommentKarma(TestCase):
         
         
         for p, k in zip([True, False, True, False, False, True, True, False, False], [1, -1, 1, -1, 0, 1, 0, -1, 0]):
-            response = self.client.post(reverse("comment_karma_change", args=(comment.pk,)), {"positive": p})
+            response = self.client.post(reverse("comment_karma_change", args=(comment.pk,)) + F"?positive={'True' if p else 'False'}")
             self.assertJSONEqual(response.content, {"success": True, "karma_given": k, "karma": k, "msg": "Succesfully changed karma!"})
             comment.refresh_from_db()
             self.assertEqual(k, comment.karma)

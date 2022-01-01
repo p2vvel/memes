@@ -71,7 +71,7 @@ class GetMemeComments(View):
         '''Returns all comments for the meme'''
         meme = get_object_or_404(Meme, pk=pk)
         sort = request.GET.get("sort", default="new")
-        
+
         if sort == "best":
             base_comments = MemeComment.objects.filter(parent_comment=None, comment_object=meme).order_by("-karma", "date_created")
         else:   #if sort == "new"
@@ -82,9 +82,20 @@ class GetMemeComments(View):
             comments_data.append(base_comm)
             for reply_comm in base_comm.memecomment_set.all().order_by("date_created", "-karma"):
                 comments_data.append(reply_comm)
+        
 
 
         serialized_comments = json.loads(serializers.serialize("json", comments_data,  use_natural_foreign_keys=True))
+        
+        if request.user.is_authenticated:
+            user = get_user(request)
+            for k, c in zip(serialized_comments, comments_data):
+                k["fields"]["karma_given"] = str(c.is_karma_given(user))
+        else:
+            for k in serialized_comments:
+                k["fields"]["karma_given"] = "0"
+                # comments_data[i].karma_given = 0
+        
         data = {"success": True, "comments_count": meme.comments_count, "comments": serialized_comments}
         return JsonResponse(data, safe=False)
 
@@ -96,7 +107,7 @@ def change_meme_comment_karma(request, pk):
             comment = get_object_or_404(MemeComment, pk=pk)
             user = get_user(request)
 
-            positive = False if request.POST.get("positive") == "False" else True
+            positive = False if request.GET.get("positive") == "False" else True
 
             try:
                 #comment karma already exist
@@ -124,6 +135,5 @@ def change_meme_comment_karma(request, pk):
             return JsonResponse({"success": True, "karma_given": karma_given, "karma": comment.karma, "msg": msg})
         else:
             return JsonResponse({"success": False, "msg": "No permission"})
-
     else:
         raise Http404()

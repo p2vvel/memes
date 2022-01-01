@@ -15,13 +15,13 @@ window.addEventListener("load", function () {
     //load comments at start
     load_comments(meme_pk_value.value, "new");
 
-    //eventy podpiete pod przyciski do ladowania komentarzy
+    //events for loading comments 
     comments_buttons.forEach(button => button.addEventListener("click", function () {
         load_comments(meme_pk_value.value, button.value);
     }));
 
 
-    //event do dodawania komentarzy
+    //events for adding comments
     comments_section.addEventListener("submit", function (e) {
         if (e.target.classList.contains("comments_add_form")) {
             e.preventDefault();
@@ -33,10 +33,82 @@ window.addEventListener("load", function () {
         }
     });
 
+    //events for voting for comments
+    comments_section.addEventListener("click", function (e) {
+        if (e.target.classList.contains("comment-vote-positive") || e.target.classList.contains("comment-vote-negative")) {
+            let positive;
+            if (e.target.classList.contains("comment-vote-positive"))
+                positive = "True"
+            else
+                positive = "False"
+
+            let comment_pk = e.target.value;
+
+            let url = `/comments/comment/${comment_pk}/karma/?positive=${positive=="False" ? "False" : "True"}`;
+            let request = new Request(url, { headers: { "X-CSRFToken": csrf_token }});
+
+            fetch(request, {
+                method: "POST",
+                mode: "same-origin"
+            })
+                .then(response => {
+                    if (response.ok)
+                        return response.json();
+                    else
+                        throw Error(response.statusText);
+                })
+                .then(data => {
+                    if (data.success) {
+                        let karma_given = data.karma_given;
+                        console.log(data);
+                        console.log(typeof(karma_given))
+
+                        let positive_button = e.target.parentNode.querySelector(".comment-vote-positive");
+                        let karma_info = e.target.parentNode.querySelector(".comment-karma-info");
+                        let negative_button = e.target.parentNode.querySelector(".comment-vote-negative");
+                        karma_info.innerText = data.karma;
+
+                        //cleaning classes
+                        positive_button.classList.remove("btn-outline-success");
+                        positive_button.classList.remove("btn-success");
+                        negative_button.classList.remove("btn-outline-danger");
+                        negative_button.classList.remove("btn-danger");
+
+                        if (karma_given == 1) {
+                            //positive karma given
+                            positive_button.classList.add("btn-success");
+                            negative_button.classList.add("btn-outline-danger");
+                        }
+                        else if (karma_given == -1) {
+                            //negative karma given
+                            positive_button.classList.add("btn-outline-success");
+                            negative_button.classList.add("btn-danger");
+                            
+                        }
+                        else {
+                            //no karma given
+                            positive_button.classList.add("btn-outline-success");
+                            negative_button.classList.add("btn-outline-danger");
+                        }
+
+                        console.log(data)
+
+                    } else {
+                        throw Error("Data NOT OK");
+                    }
+                })
+                .catch(error => {
+                    console.log(error.message);
+                });
+
+
+        }
+    });
+
 
     function load_comments(meme_pk, sort_style = "new") {
         let url = `/comments/meme/${meme_pk}/?sort=${sort_style}"`;
-        let request = new Request(url, {headers: {"X-CSRFToken": csrf_token}});
+        let request = new Request(url, { headers: { "X-CSRFToken": csrf_token } });
         //turn on comments loading animation
         comments_spinner.style.display = "block";
 
@@ -54,6 +126,7 @@ window.addEventListener("load", function () {
                 //turn off comments loading animation
                 comments_spinner.style.display = "none";
                 if (data.success) {
+                    console.log(data)
                     //clear old comments
                     comments_box.innerHTML = "";
 
@@ -64,6 +137,7 @@ window.addEventListener("load", function () {
                         let pk = comm.pk;
                         let content = comm.fields.content;
                         let karma = comm.fields.karma;
+                        let karma_given = comm.fields.karma_given;
 
                         let date_created = new Date(comm.fields.date_created);
                         let date_printed = date_created.toLocaleString({
@@ -93,9 +167,9 @@ window.addEventListener("load", function () {
                                         </a>
 
                                         <div class="btn-group" role="group" aria-label="Comment karma section">
-                                            <button type="button" class="btn btn-outline-success btn-sm"><b>+</b></button>
-                                            <button type="button" class="btn btn-outline-dark btn-sm" disabled><b>${karma}</b></button>
-                                            <button type="button" class="btn btn-outline-danger btn-sm"><b>-</b></button>
+                                            <button type="button" class="comment-vote-positive btn ${karma_given === "1" ? "btn-success" : "btn-outline-success"} btn-sm" value="${pk}"><b>+</b></button>
+                                            <button type="button" class="btn btn-outline-dark btn-sm" disabled><b class="comment-karma-info">${karma}</b></button>
+                                            <button type="button" class="comment-vote-negative btn ${karma_given === "-1" ? "btn-danger" : "btn-outline-danger"} btn-sm" value="${pk}"><b>-</b></button>
                                         </div>
                                     </div>
                                 </div>
@@ -133,7 +207,7 @@ window.addEventListener("load", function () {
 
     function add_comment(meme_pk, parent_pk, content) {
         let url = (parent_pk === "" ? `/comments/meme/${meme_pk}/add/` : `/comments/comment/${parent_pk}/add/`);
-        let request = new Request(url, {headers: {"X-CSRFToken": csrf_token}});
+        let request = new Request(url, { headers: { "X-CSRFToken": csrf_token } });
         let form_data = new FormData();
         form_data.append("content", content);
 

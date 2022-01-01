@@ -33,6 +33,18 @@ class CommentKarma(models.Model):
 class MemeComment(Comment):
     comment_object  = models.ForeignKey(to=Meme, null=False, on_delete=models.CASCADE)
 
+    def is_karma_given(self, user):
+        '''Retruns 1 if user gave positive karma to comment, -1 if karma was negative, 0 if user didnt vote for comment'''
+        try:
+            karma = MemeCommentKarma.objects.get(user=user, comment=self)
+            #karma exists if exception wasnt raised, return 1 if its positive karma, else return -1
+            return 1 if karma.positive else -1
+        except MemeCommentKarma.DoesNotExist:
+            #karma info for specified user and comment doesnt exist - user hasnt voted yet
+            return 0
+
+        
+
 
 #TODO: add negative karma for comments
 class MemeCommentKarma(CommentKarma):
