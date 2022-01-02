@@ -11,4 +11,4 @@ class MemeForm(forms.ModelForm):
         self.fields['original_image'].widget.attrs.update({'accept': 'image/jpeg, image/png, image/gif'})
     class Meta:
         model = Meme
-        fields = ["title", "original_image", "description"]
+        fields = ["title", "original_image", "description", "category"]

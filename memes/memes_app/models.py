@@ -11,6 +11,9 @@ from django.conf import settings
 
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
+from django.db.models.base import Model
+
+from django.db.models.deletion import SET_NULL
 
 
 from .utils import add_watermark, get_normal_image, resize_image
@@ -33,6 +36,14 @@ def upload_meme_normal(instance, filename):
     return "memes/normal/{filename}".format(filename=new_filename)
 
 
+
+class Category(models.Model):
+    name            = models.CharField(max_length=50, null=False, blank=False)
+    public          = models.BooleanField(default=True, null=False)
+
+    def __str__(self):
+        return str.capitalize(self.name)
+
 class Meme(models.Model):
     title           = models.CharField(max_length=255, blank=False, null=False)
     description     = models.TextField(max_length=1000, blank=True, null=True, default="")
@@ -43,6 +54,7 @@ class Meme(models.Model):
     date_accepted   = models.DateTimeField(blank=True, null=True)
     original_image  = models.ImageField(max_length=255, blank=False, null=False, upload_to=upload_meme_original)
     normal_image    = models.ImageField(max_length=255, blank=True, null=False, upload_to=upload_meme_normal)
+    category        = models.ForeignKey(to=Category, null=True, default=None, blank=True, on_delete=models.SET_NULL)
 
     original_poster = models.ForeignKey(to=get_user_model(), default=None, null=True, on_delete=models.SET_NULL)
 
@@ -103,3 +115,4 @@ class MemeKarma(models.Model):
     date_created    = models.DateTimeField(auto_now_add=True)
     meme            = models.ForeignKey(to=Meme, on_delete=models.CASCADE, null=False)
     user            = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE)
+

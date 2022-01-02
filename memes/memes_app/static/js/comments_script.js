@@ -44,8 +44,8 @@ window.addEventListener("load", function () {
 
             let comment_pk = e.target.value;
 
-            let url = `/comments/comment/${comment_pk}/karma/?positive=${positive=="False" ? "False" : "True"}`;
-            let request = new Request(url, { headers: { "X-CSRFToken": csrf_token }});
+            let url = `/comments/comment/${comment_pk}/karma/?positive=${positive == "False" ? "False" : "True"}`;
+            let request = new Request(url, { headers: { "X-CSRFToken": csrf_token } });
 
             fetch(request, {
                 method: "POST",
@@ -81,7 +81,7 @@ window.addEventListener("load", function () {
                             //negative karma given
                             positive_button.classList.add("btn-outline-success");
                             negative_button.classList.add("btn-danger");
-                            
+
                         }
                         else {
                             //no karma given

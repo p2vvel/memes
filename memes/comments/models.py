@@ -7,7 +7,7 @@ from memes_app.models import Meme
 
 class Comment(models.Model):
     '''Base class for comments. Might be later used to leave comments about e.g. users'''
-    date_created      = models.DateTimeField(auto_now_add=True)
+    date_created    = models.DateTimeField(auto_now_add=True)
     date_edited     = models.DateTimeField(auto_now=True)   #if date_added != date_edited => comment was edited
     original_poster = models.ForeignKey(to=get_user_model(), default=None, null=True, on_delete=models.SET_NULL)
     content         = models.CharField(max_length=12000, null=False, blank=False)
@@ -22,7 +22,7 @@ class Comment(models.Model):
 class CommentKarma(models.Model):
     '''Base class for Comments Karma. Might be later used for comments different than users one'''
     date_created    = models.DateTimeField(auto_now_add=True, null=False)
-    user          = models.ForeignKey(to=get_user_model(), null=False, on_delete=models.CASCADE) #TODO: handle karma point change on user account delete
+    user            = models.ForeignKey(to=get_user_model(), null=False, on_delete=models.CASCADE) #TODO: handle karma point change on user account delete
     comment         = None #define in child classes! Variable storing reference to rated comment
     positive        = models.BooleanField(verbose_name="Positive Comment", default=True, null=False) #indicates if karma is positive (+1 or -1 to total karma count)
 
@@ -46,7 +46,6 @@ class MemeComment(Comment):
         
 
 
-#TODO: add negative karma for comments
 class MemeCommentKarma(CommentKarma):
     comment         = models.ForeignKey(to=MemeComment, null=False, on_delete=models.CASCADE)
 
