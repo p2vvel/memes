@@ -100,7 +100,6 @@ class GetMemeComments(View):
         return JsonResponse(data, safe=False)
 
 
-#TODO: add controls to template
 def change_meme_comment_karma(request, pk):
     if request.method == "POST":
         if request.user.is_authenticated:

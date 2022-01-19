@@ -45,11 +45,6 @@ class MainMemeView(ListView):
                 k.karma_given = False
 
         return data
-        # data = (self.model.objects.all()
-        #     .order_by(*self.ordering)
-        #     .filter(accepted=False))
-        # return data
-    
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -88,6 +83,8 @@ class MemeView(DetailView):
         context["form"] = MemeCommentForm()
         return context
     
+
+class 
 
 class MemeAdd(View):
     @method_decorator(login_required)

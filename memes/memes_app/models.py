@@ -36,13 +36,13 @@ def upload_meme_normal(instance, filename):
     return "memes/normal/{filename}".format(filename=new_filename)
 
 
-
 class Category(models.Model):
     name            = models.CharField(max_length=50, null=False, blank=False)
-    public          = models.BooleanField(default=True, null=False)
+    public          = models.BooleanField(default=True, null=False)             #public = visible for anonymous users too
 
     def __str__(self):
         return str.capitalize(self.name)
+
 
 class Meme(models.Model):
     title           = models.CharField(max_length=255, blank=False, null=False)
