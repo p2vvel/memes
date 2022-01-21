@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
-from typing import List
 from django.http.response import Http404
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
 
@@ -28,7 +26,7 @@ from comments.forms import MemeCommentForm
 from django.db.models import Q
 
 
-#main site with accepted memes
+# main site with accepted memes
 class MainMemeView(ListView):
     model = Meme
     paginate_by = 8
@@ -58,6 +56,7 @@ class MainMemeView(ListView):
 class FreshMemeView(MainMemeView):
     template_name = "memes/fresh_view.html"
     ordering = ["-date_created"]
+
     def get_queryset(self):
         user = get_user(self.request)
         data = super(ListView, self).get_queryset()
@@ -70,11 +69,11 @@ class FreshMemeView(MainMemeView):
                 k.karma_given = False
         return data
 
+
 class MemeView(DetailView):
     model = Meme
     context_object_name = "meme"
     template_name = "memes/meme_view.html"
-
 
     def get_context_data(self, **kwargs):
         user = get_user(self.request)
@@ -89,43 +88,44 @@ class MemeView(DetailView):
 
 class NewFreshView(ListView):
     model = Meme
-    
+    paginate_by = 8
+    template_name = "memes/fresh_view.html"
+    context_object_name = "memes"
+
     def get_queryset(self):
-        if self.request.is_authenticated:
-            data = self.model.objects.filter(accepted=False)    #for logged users everything is visible
-        else:
-            data = self.model.objects.filter(accepted=False, category__public=True)    #first filtering
+        """Sorting and filtering memes by category"""
+        data = self.model.objects.filter(accepted=False)    #getting base data
 
+        if not self.request.user.is_authenticated:
+            condition = Q(category__isnull=True) | Q(category__public=True)
+            data = data.filter(condition)
 
-        chosen_categories = self.request.GET.getlist("category") #getting categories
+        chosen_categories = self.request.GET.getlist("category")    # getting categories
         try:
-            chosen_categories[chosen_categories.index("none")] = None   #replace "none" string with real none value
+            chosen_categories[chosen_categories.index("none")] = None   # replace "none" string with real none value
         except ValueError:
-            pass    #nothing to do if user doesnt want to see main memes (those without assigned category), error raised if "none" not in chosen categoriess
-        
+            pass    # nothing to do if user doesn't want to see main memes (those without assigned category),
+                    # error raised if "none" not in chosen categoriess
+
         if chosen_categories != []:
             categories_filter = Q()
             for k in chosen_categories:
-                categories_filter |= Q(category__slug_iexact=k)
+                categories_filter |= Q(category__slug__iexact=k)
             data = data.filter(accepted=False).filter(categories_filter)
-        
-        
+
         sort_method = self.request.GET.get("sort", "new")
         if sort_method == "best":
             data = data.order_by("-karma")
         elif sort_method == "best12":
             time_delta = datetime.now() - timedelta(hours=12)
-            data = data.order_by("-karma").filter(date_added__gte=time_delta)
+            data = data.order_by("-karma").filter(date_created__gte=time_delta)
         elif sort_method == "best72":
             time_delta = datetime.now() - timedelta(days=3)
-            data = data.order_by("-karma").filter(date_added__gte=time_delta)
-        else:# sort_method == "new":
+            data = data.order_by("-karma").filter(date_created__gte=time_delta)
+        else:   # sort_method == "new":
             data = data.order_by("-date_created")
 
         return data
-
-
-            
 
 
 
@@ -147,9 +147,6 @@ class MemeAdd(View):
         return redirect("index")
 
 
-
-
-
 def karma_change(request, pk):
     if request.method == "POST":
         if request.user.is_authenticated:
@@ -161,7 +158,7 @@ def karma_change(request, pk):
                 given_karma.delete()
                 meme.karma -= 1   
                 meme.save()
-                msg =  "Succesfully taken karma away!"
+                msg =  "Successfully taken karma away!"
                 karma_given = False
             except MemeKarma.DoesNotExist:
                 #meme wasnt given karma point by user
@@ -169,7 +166,7 @@ def karma_change(request, pk):
                 given_karma.save()
                 meme.karma += 1
                 meme.save()
-                msg = "Succesfully fiven karma point"
+                msg = "Successfully fiven karma point"
                 karma_given = True
 
             return JsonResponse({"success": True, "karma_given": karma_given, "karma": meme.karma, "msg": msg})
@@ -180,7 +177,7 @@ def karma_change(request, pk):
 
 
 def visibility_change(request, pk) -> JsonResponse:
-    '''Change meme visibility (only available for admin)'''
+    """Change meme visibility (only available for admin)"""
     if request.method == "POST":
         if request.user.is_authenticated and request.user.is_superuser:
             meme = get_object_or_404(Meme, pk=pk)
@@ -189,7 +186,7 @@ def visibility_change(request, pk) -> JsonResponse:
             meme.save()
 
             # return redirect(reverse("meme_view", args=(meme.pk,)))
-            msg = "Succesfully set meme visible" if meme.hidden else "Succesfully hidden meme"
+            msg = "Successfully set meme visible" if meme.hidden else "Successfully hidden meme"
             return JsonResponse({"success": True, "hidden": meme.hidden, "msg": msg})
         else:
             # return redirect("index")
@@ -199,7 +196,7 @@ def visibility_change(request, pk) -> JsonResponse:
 
 
 def acceptance_change(request, pk) -> JsonResponse:
-    '''Change if meme is accepted(visible on main meme listview), available only for admin'''
+    """Change if meme is accepted(visible on main meme listview), available only for admin"""
     if request.method == "POST":
         if request.user.is_authenticated and request.user.is_superuser:
             meme = get_object_or_404(Meme, pk=pk)
@@ -208,12 +205,12 @@ def acceptance_change(request, pk) -> JsonResponse:
                 meme.accepted = True
                 meme.date_accepted = timezone.now()
                 meme.save()
-                msg = "Succesfully accepted meme"
+                msg = "Successfully accepted meme"
             else:
                 meme.accepted = False
                 meme.date_accepted = None
                 meme.save()
-                msg = "Succesfully reversed meme acceptance"
+                msg = "Successfully reversed meme acceptance"
             
             return JsonResponse({"success": True, "accepted": meme.accepted, "msg": msg})
             # return redirect(reverse("meme_view", args=(meme.pk,)))

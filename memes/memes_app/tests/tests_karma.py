@@ -39,7 +39,7 @@ class TestMemeKarma(TestCase):
         self.client.login(email="jerry@example.com", password="1234")
         memes = Meme.objects.all()
         meme = memes[0]
-        messages = ["Succesfully taken karma away!", "Succesfully fiven karma point"]
+        messages = ["Successfully taken karma away!", "Successfully fiven karma point"]
         for k in [1, 0, 1, 0]:
             response = self.client.post(reverse("meme_karma_change", args=(meme.pk,)), follow=True)
             # self.assertRedirects(response, reverse("meme_view", args=(meme.pk,)))

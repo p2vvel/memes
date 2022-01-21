@@ -30,7 +30,7 @@ class AddMemeComment(View):
                     new_comment.original_poster = get_user(request)
                     new_comment.comment_object = meme
                     new_comment.save()
-                    return JsonResponse({"success": True, "msg": "Succesfully added new comment"})
+                    return JsonResponse({"success": True, "msg": "Successfully added new comment"})
                 else:
                     return JsonResponse({"success": False, "msg": "Failed adding comment"})
             else:
@@ -58,7 +58,7 @@ class AddReplyComment(View):
                     else:
                         comment.parent_comment = parent_comment
                     comment.save()
-                    return JsonResponse({"success": True, "msg": "Succesfully added new comment"})
+                    return JsonResponse({"success": True, "msg": "Successfully added new comment"})
                 else:
                     return JsonResponse({"success": False, "msg": "Failed adding comment"})
             else:
@@ -121,14 +121,14 @@ def change_meme_comment_karma(request, pk):
                     given_karma.save()
                     karma_given = 1 if positive else -1
                 comment.save()
-                msg =  "Succesfully changed karma!"
+                msg =  "Successfully changed karma!"
             except MemeCommentKarma.DoesNotExist:
                 #meme wasnt given karma point by user
                 given_karma = MemeCommentKarma(user=user, comment=comment, positive=positive)
                 given_karma.save()
                 comment.karma += 1 if positive else -1
                 comment.save()
-                msg = "Succesfully changed karma!"
+                msg = "Successfully changed karma!"
                 karma_given = 1 if positive else -1
 
             return JsonResponse({"success": True, "karma_given": karma_given, "karma": comment.karma, "msg": msg})
