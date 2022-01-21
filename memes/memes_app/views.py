@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import List
 from django.http.response import Http404
 from django.http import JsonResponse
@@ -6,7 +7,7 @@ from django.views.generic import ListView, DetailView
 
 from .forms import MemeForm
 
-from .models import Meme, MemeKarma
+from .models import Category, Meme, MemeKarma
 from django.contrib.auth import get_user, login
 from django.contrib.auth.decorators import login_required
 
@@ -23,6 +24,8 @@ from django.utils import timezone
 
 from comments.forms import MemeCommentForm
 # Create your views here.
+
+from django.db.models import Q
 
 
 #main site with accepted memes
@@ -84,7 +87,47 @@ class MemeView(DetailView):
         return context
     
 
-class 
+class NewFreshView(ListView):
+    model = Meme
+    
+    def get_queryset(self):
+        if self.request.is_authenticated:
+            data = self.model.objects.filter(accepted=False)    #for logged users everything is visible
+        else:
+            data = self.model.objects.filter(accepted=False, category__public=True)    #first filtering
+
+
+        chosen_categories = self.request.GET.getlist("category") #getting categories
+        try:
+            chosen_categories[chosen_categories.index("none")] = None   #replace "none" string with real none value
+        except ValueError:
+            pass    #nothing to do if user doesnt want to see main memes (those without assigned category), error raised if "none" not in chosen categoriess
+        
+        if chosen_categories != []:
+            categories_filter = Q()
+            for k in chosen_categories:
+                categories_filter |= Q(category__slug_iexact=k)
+            data = data.filter(accepted=False).filter(categories_filter)
+        
+        
+        sort_method = self.request.GET.get("sort", "new")
+        if sort_method == "best":
+            data = data.order_by("-karma")
+        elif sort_method == "best12":
+            time_delta = datetime.now() - timedelta(hours=12)
+            data = data.order_by("-karma").filter(date_added__gte=time_delta)
+        elif sort_method == "best72":
+            time_delta = datetime.now() - timedelta(days=3)
+            data = data.order_by("-karma").filter(date_added__gte=time_delta)
+        else:# sort_method == "new":
+            data = data.order_by("-date_created")
+
+        return data
+
+
+            
+
+
 
 class MemeAdd(View):
     @method_decorator(login_required)

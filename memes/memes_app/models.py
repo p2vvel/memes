@@ -23,6 +23,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 
 
+from django.utils.text import slugify
+
 from django.apps import apps
 
 def upload_meme_original(instance, filename):
@@ -39,6 +41,11 @@ def upload_meme_normal(instance, filename):
 class Category(models.Model):
     name            = models.CharField(max_length=50, null=False, blank=False)
     public          = models.BooleanField(default=True, null=False)             #public = visible for anonymous users too
+    slug            = models.SlugField(unique=True, default=None)                              #for sending categories as url parameters
+
+    def save(self, *args, **kwargs):
+        self.slug = slugify
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return str.capitalize(self.name)
