@@ -24,7 +24,6 @@ def upload_meme_original(instance, filename):
 
 
 def upload_meme_normal(instance, filename):
-    new_filename = uuid.uuid4()
     new_filename = Path(instance.original_image.file.name).name  # original_image is already saved
     return "memes/normal/{filename}".format(filename=new_filename)
 
@@ -74,7 +73,7 @@ class Meme(models.Model):
         super(Meme, self).delete(args, kwargs)
 
     def clean(self):
-        '''Added image format checking. Only PNG, JPEG and GIF formats allowed'''
+        """Added image format checking. Only PNG, JPEG and GIF formats allowed"""
         super().clean()
         if self.original_image: # image has to be uploaded
             try:

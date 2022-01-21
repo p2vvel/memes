@@ -208,7 +208,6 @@ class TestFreshMemeViewSort(TestCase):
 
         meme_ids = [k.pk for k in memes.order_by("-karma")]
 
-        # test multiple categories and memes without category
         response = self.client.get(reverse("new_fresh_index") + "?sort=best")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[:8], [k.pk for k in response.context["memes"]])
@@ -230,7 +229,6 @@ class TestFreshMemeViewSort(TestCase):
 
         meme_ids = [k.pk for k in memes.order_by("-karma")]
 
-        # test multiple categories and memes without category
         response = self.client.get(reverse("new_fresh_index") + "?sort=best12")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[2:], [k.pk for k in response.context["memes"]])
@@ -255,7 +253,6 @@ class TestFreshMemeViewSort(TestCase):
 
         meme_ids = [k.pk for k in memes.order_by("-karma")]
 
-        # test multiple categories and memes without category
         response = self.client.get(reverse("new_fresh_index") + "?sort=best72")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[2:], [k.pk for k in response.context["memes"]])
