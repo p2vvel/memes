@@ -35,11 +35,11 @@ class TestFreshMemeViewBase(TestCase):
         memes = Meme.objects.all().order_by("-date_created")
         meme_ids = [k.pk for k in memes]
 
-        response = self.client.get(reverse("new_fresh_index"))
+        response = self.client.get(reverse("fresh_index"))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[:8], [k.pk for k in response.context["memes"]])
 
-        response = self.client.get(reverse("new_fresh_index") + "?page=2")
+        response = self.client.get(reverse("fresh_index") + "?page=2")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[8:], [k.pk for k in response.context["memes"]])
 
@@ -59,24 +59,24 @@ class TestFreshMemeViewBase(TestCase):
             memes[k].category = f1
             memes[k].save()
 
-        response = self.client.get(reverse("new_fresh_index") + "?category=paws")
+        response = self.client.get(reverse("fresh_index") + "?category=paws")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[:3], [k.pk for k in response.context["memes"]])
 
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1")
+        response = self.client.get(reverse("fresh_index") + "?category=f1")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[3:6], [k.pk for k in response.context["memes"]])
 
         # test multiple categories
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1&category=paws")
+        response = self.client.get(reverse("fresh_index") + "?category=f1&category=paws")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[:6], [k.pk for k in response.context["memes"]])
 
         # test multiple categories and memes without category
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1&category=paws&category=none")
+        response = self.client.get(reverse("fresh_index") + "?category=f1&category=paws&category=none")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[:8], [k.pk for k in response.context["memes"]])
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1&category=paws&category=none&page=2")
+        response = self.client.get(reverse("fresh_index") + "?category=f1&category=paws&category=none&page=2")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[8:], [k.pk for k in response.context["memes"]])
 
@@ -98,21 +98,21 @@ class TestFreshMemeViewBase(TestCase):
             memes[k].category = f1
             memes[k].save()
 
-        response = self.client.get(reverse("new_fresh_index") + "?category=paws")
+        response = self.client.get(reverse("fresh_index") + "?category=paws")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([], [k.pk for k in response.context["memes"]])
 
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1")
+        response = self.client.get(reverse("fresh_index") + "?category=f1")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[3:6], [k.pk for k in response.context["memes"]])
 
         # test multiple categories
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1&category=paws")
+        response = self.client.get(reverse("fresh_index") + "?category=f1&category=paws")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[3:6], [k.pk for k in response.context["memes"]])
 
         # test multiple categories and memes without category
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1&category=paws&category=none")
+        response = self.client.get(reverse("fresh_index") + "?category=f1&category=paws&category=none")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[3:], [k.pk for k in response.context["memes"]])
 
@@ -133,31 +133,31 @@ class TestFreshMemeViewBase(TestCase):
             memes[k].category = f1
             memes[k].save()
 
-        response = self.client.get(reverse("new_fresh_index") + "?category=paws")
+        response = self.client.get(reverse("fresh_index") + "?category=paws")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[:3], [k.pk for k in response.context["memes"]])
 
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1")
+        response = self.client.get(reverse("fresh_index") + "?category=f1")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[3:6], [k.pk for k in response.context["memes"]])
 
         # test multiple categories
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1&category=paws")
+        response = self.client.get(reverse("fresh_index") + "?category=f1&category=paws")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[:6], [k.pk for k in response.context["memes"]])
 
         # test multiple categories and memes without category
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1&category=paws&category=none")
+        response = self.client.get(reverse("fresh_index") + "?category=f1&category=paws&category=none")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[:8], [k.pk for k in response.context["memes"]])\
 
-        response = self.client.get(reverse("new_fresh_index") + "?category=f1&category=paws&category=none&page=2")
+        response = self.client.get(reverse("fresh_index") + "?category=f1&category=paws&category=none&page=2")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[8:], [k.pk for k in response.context["memes"]])
 
     def test_non_existing_category(self):
         """Non-existing category lookup should return empty memes"""
-        response = self.client.get(reverse("new_fresh_index") + "?category=paws")
+        response = self.client.get(reverse("fresh_index") + "?category=paws")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([], [k.pk for k in response.context["memes"]])
 
@@ -191,11 +191,11 @@ class TestFreshMemeViewSort(TestCase):
         meme_ids = [k.pk for k  in memes]
 
         # test multiple categories and memes without category
-        response = self.client.get(reverse("new_fresh_index"))
+        response = self.client.get(reverse("fresh_index"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[:8], [k.pk for k in response.context["memes"]])\
 
-        response = self.client.get(reverse("new_fresh_index") + "?page=2")
+        response = self.client.get(reverse("fresh_index") + "?page=2")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[8:], [k.pk for k in response.context["memes"]])
 
@@ -208,11 +208,11 @@ class TestFreshMemeViewSort(TestCase):
 
         meme_ids = [k.pk for k in memes.order_by("-karma")]
 
-        response = self.client.get(reverse("new_fresh_index") + "?sort=best")
+        response = self.client.get(reverse("fresh_index") + "?sort=best")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[:8], [k.pk for k in response.context["memes"]])
 
-        response = self.client.get(reverse("new_fresh_index") + "?sort=best&page=2")
+        response = self.client.get(reverse("fresh_index") + "?sort=best&page=2")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[8:], [k.pk for k in response.context["memes"]])
 
@@ -229,11 +229,11 @@ class TestFreshMemeViewSort(TestCase):
 
         meme_ids = [k.pk for k in memes.order_by("-karma")]
 
-        response = self.client.get(reverse("new_fresh_index") + "?sort=best12")
+        response = self.client.get(reverse("fresh_index") + "?sort=best12")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[2:], [k.pk for k in response.context["memes"]])
 
-        response = self.client.get(reverse("new_fresh_index") + "?sort=best12&page=2")
+        response = self.client.get(reverse("fresh_index") + "?sort=best12&page=2")
         self.assertEqual(response.status_code, 404)     # will raise 404 because there won't be any more memes to show
 
     def check_basic_sort_best_72h(self):
@@ -253,9 +253,9 @@ class TestFreshMemeViewSort(TestCase):
 
         meme_ids = [k.pk for k in memes.order_by("-karma")]
 
-        response = self.client.get(reverse("new_fresh_index") + "?sort=best72")
+        response = self.client.get(reverse("fresh_index") + "?sort=best72")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(meme_ids[2:], [k.pk for k in response.context["memes"]])
 
-        response = self.client.get(reverse("new_fresh_index") + "?sort=best72&page=2")
+        response = self.client.get(reverse("fresh_index") + "?sort=best72&page=2")
         self.assertEqual(response.status_code, 404)     # will raise 404 because there won't be any more memes to show

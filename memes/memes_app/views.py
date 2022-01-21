@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
+from pip._internal.cli.spinners import hidden_cursor
 
 from .forms import MemeForm
 
@@ -52,24 +53,6 @@ class MainMemeView(ListView):
         context["form"] = MemeForm()
         return context
 
-
-class FreshMemeView(MainMemeView):
-    template_name = "memes/fresh_view.html"
-    ordering = ["-date_created"]
-
-    def get_queryset(self):
-        user = get_user(self.request)
-        data = super(ListView, self).get_queryset()
-        data = data.filter(accepted=False, hidden=False)
-        if self.request.user.is_authenticated:
-            for k in data:
-                k.karma_given = k.is_karma_given(user)
-        else:
-            for k in data:
-                k.karma_given = False
-        return data
-
-
 class MemeView(DetailView):
     model = Meme
     context_object_name = "meme"
@@ -86,7 +69,7 @@ class MemeView(DetailView):
         return context
     
 
-class NewFreshView(ListView):
+class FreshMemeView(ListView):
     model = Meme
     paginate_by = 8
     template_name = "memes/fresh_view.html"
@@ -94,7 +77,7 @@ class NewFreshView(ListView):
 
     def get_queryset(self):
         """Sorting and filtering memes by category"""
-        data = self.model.objects.filter(accepted=False)    #getting base data
+        data = self.model.objects.filter(accepted=False, hidden=False)    #getting base data
 
         if not self.request.user.is_authenticated:
             condition = Q(category__isnull=True) | Q(category__public=True)
