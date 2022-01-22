@@ -103,7 +103,7 @@ class Meme(models.Model):
             given_karma = MemeKarma.objects.get(user=user, meme=self)
             return True
         except MemeKarma.DoesNotExist:
-            # meme wasnt given karma point by user
+            # meme wasn't given karma point by user
             given_karma = MemeKarma(user=user, meme=self)
             return False
 

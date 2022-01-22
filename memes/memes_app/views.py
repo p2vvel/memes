@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
-from pip._internal.cli.spinners import hidden_cursor
 
 from .forms import MemeForm
 
@@ -13,8 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import View
 
 from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
-from django.urls.base import reverse
 
 
 from django.http import JsonResponse
@@ -25,6 +24,8 @@ from comments.forms import MemeCommentForm
 # Create your views here.
 
 from django.db.models import Q
+
+
 
 
 # main site with accepted memes
@@ -67,8 +68,9 @@ class MemeView(DetailView):
             context["meme"].karma_given = False
         context["form"] = MemeCommentForm()
         return context
-    
 
+
+@method_decorator(csrf_exempt, name='dispatch')
 class FreshMemeView(ListView):
     model = Meme
     paginate_by = 8
@@ -108,8 +110,25 @@ class FreshMemeView(ListView):
         else:   # sort_method == "new":
             data = data.order_by("-date_created")
 
+        # adding information to indicate if user has given a karma point to the meme
+        user = get_user(self.request)
+        if self.request.user.is_authenticated:
+            for k in data:
+                k.karma_given = k.is_karma_given(user)
+        else:
+            for k in data:
+                k.karma_given = False
         return data
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(FreshMemeView, self).get_context_data()
+        if self.request.user.is_authenticated:
+            categories = Category.objects.all()
+        else:
+            categories = Category.objects.filter(public=True)
+        context["categories"] = categories
+        context["sort_methods"] = [("new", "New"), ("best", "Best"), ("best12", "Best 12h"), ("best72", "Best 72h")]
+        return context
 
 
 class MemeAdd(View):

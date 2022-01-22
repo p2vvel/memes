@@ -116,7 +116,6 @@ class TestFreshMemeViewBase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(meme_ids[3:], [k.pk for k in response.context["memes"]])
 
-
     def test_restricted_category_logged(self):
         """Test if logged user can see memes from private categories"""
         memes = Meme.objects.all().order_by("-date_created")
