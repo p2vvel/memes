@@ -17,7 +17,6 @@
     {% csrf_token %}
 
 
-    {# TODO: napraw znikanie parametrow GET po zmianie strony   #}
     <form method="GET" action={% url "fresh_index" %}>
         <div class="row">
             <div class="col">
@@ -144,18 +143,21 @@
             <div class="col d-flex justify-content-center my-3">
                 <nav aria-label="Page navigation example">
                     <ul class="pagination">
-                    {% url "fresh_memes" page=1 as first_page %}
-                        <li class="page-item"><a class="page-link" href={{ first_page|preserve_filters:view.request.GET }}>First</a></li>
+                        {% url "fresh_memes" page=1 as first_page %}
+                        <li class="page-item"><a class="page-link" href=
+                                {{ first_page|preserve_filters:view.request.GET }}>First</a></li>
 
                         {% for i in page_obj.paginator.page_range %}
                             {% if i == page_obj.number %}
                                 {% url "fresh_memes" page=i as next_page %}
                                 <li class="page-item active"><a class="page-link"
-                                                                href={{ next_page|preserve_filters:view.request.GET }}>{{ i }}</a></li>
+                                                                href=
+                                        {{ next_page|preserve_filters:view.request.GET }}>{{ i }}</a></li>
                             {% elif i >= page_obj.number|add:-3 and i <= page_obj.number|add:3 %}
                                 {% url "fresh_memes" page=i as next_page %}
                                 <li class="page-item"><a class="page-link"
-                                                         href={{ next_page|preserve_filters:view.request.GET }}>{{ i }}</a></li>
+                                                         href=
+                                        {{ next_page|preserve_filters:view.request.GET }}>{{ i }}</a></li>
                             {% endif %}
                         {% endfor %}
                         {% url "fresh_memes" page=page_obj.paginator.num_pages as last_page %}
