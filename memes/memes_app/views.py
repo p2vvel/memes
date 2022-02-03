@@ -2,30 +2,17 @@ from datetime import datetime, timedelta
 from django.http.response import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import ListView, DetailView
-
 from .forms import MemeForm
-
 from .models import Category, Meme, MemeKarma
-from django.contrib.auth import get_user, login
+from django.contrib.auth import get_user
 from django.contrib.auth.decorators import login_required
-
 from django.views.generic import View
-
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-
-
-
 from django.http import JsonResponse
 from django.utils import timezone
-
-
 from comments.forms import MemeCommentForm
-# Create your views here.
-
 from django.db.models import Q
-
-
 
 
 # main site with accepted memes
@@ -39,7 +26,7 @@ class MainMemeView(ListView):
     def get_queryset(self):
         user = get_user(self.request)
         data = super().get_queryset()
-        data =  data.filter(accepted=True, hidden=False)
+        data = data.filter(accepted=True, hidden=False)
         if self.request.user.is_authenticated:
             for k in data:
                 k.karma_given = k.is_karma_given(user)
@@ -53,6 +40,7 @@ class MainMemeView(ListView):
         context = super().get_context_data(**kwargs)
         context["form"] = MemeForm()
         return context
+
 
 class MemeView(DetailView):
     model = Meme
@@ -90,7 +78,7 @@ class FreshMemeView(ListView):
             chosen_categories[chosen_categories.index("none")] = None   # replace "none" string with real none value
         except ValueError:
             pass    # nothing to do if user doesn't want to see main memes (those without assigned category),
-                    # error raised if "none" not in chosen categoriess
+                    # error raised if "none" not in chosen categories
 
         if chosen_categories != []:
             categories_filter = Q()
@@ -131,6 +119,16 @@ class FreshMemeView(ListView):
         return context
 
 
+# TODO: create category view
+class CategoryView(ListView):
+    model = Meme
+    paginate_by = 8
+    template_name = "memes/category_view.html"
+    context_object_name = "memes"
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        print(self.kwargs["category"])
+
 class MemeAdd(View):
     @method_decorator(login_required)
     def get(self, request):
@@ -140,7 +138,7 @@ class MemeAdd(View):
     def post(self, request):
         if request.user.is_authenticated:
             form = MemeForm(request.POST, request.FILES)
-            #TODO: message about failing meme add
+            # TODO: message about failing meme add
             if form.is_valid():
                 new_meme = form.save(commit=False)
                 new_meme.original_poster = get_user(request)
@@ -154,7 +152,6 @@ def karma_change(request, pk):
         if request.user.is_authenticated:
             user = get_user(request)
             meme = get_object_or_404(Meme, pk=pk)
-
             try:
                 given_karma = MemeKarma.objects.get(user=user, meme=meme)
                 given_karma.delete()
@@ -163,12 +160,12 @@ def karma_change(request, pk):
                 msg =  "Successfully taken karma away!"
                 karma_given = False
             except MemeKarma.DoesNotExist:
-                #meme wasnt given karma point by user
+                # meme wasn't given karma point by user
                 given_karma = MemeKarma(user=user, meme=meme)
                 given_karma.save()
                 meme.karma += 1
                 meme.save()
-                msg = "Successfully fiven karma point"
+                msg = "Successfully given karma point"
                 karma_given = True
 
             return JsonResponse({"success": True, "karma_given": karma_given, "karma": meme.karma, "msg": msg})
