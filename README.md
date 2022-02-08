@@ -10,6 +10,8 @@ Functionality:
 
 
 TODO:
+* migrate to POSTGESQL or MYSQL!!!
+* containerization!
 * use django admin site!
 * front-end!
 * finish authentication to provide email verification!
