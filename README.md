@@ -10,7 +10,7 @@ Functionality:
 
 
 TODO:
-* migrate to POSTGESQL or MYSQL!!!
+* MIGRATE TO POSTGRESQL or MYSQL!!!
 * containerization!
 * use django admin site!
 * front-end!
