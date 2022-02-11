@@ -1,7 +1,7 @@
 from django.urls import path
 
-from .views import MainMemeView, MemeView, FreshMemeView, MemeAdd, acceptance_change, karma_change, FreshMemeView, visibility_change
-
+from .views import MainMemeView, MemeView, FreshMemeView, MemeAdd, acceptance_change, karma_change, FreshMemeView, \
+    visibility_change, CategoryView
 
 urlpatterns = [
     # default page is 1 if not specified

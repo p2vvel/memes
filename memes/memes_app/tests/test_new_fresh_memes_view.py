@@ -187,7 +187,7 @@ class TestFreshMemeViewSort(TestCase):
     def check_basic_sort(self):
         """Check if memes are sorted by newest by default"""
         memes = Meme.objects.all().order_by("-date_created")
-        meme_ids = [k.pk for k  in memes]
+        meme_ids = [k.pk for k in memes]
 
         # test multiple categories and memes without category
         response = self.client.get(reverse("fresh_index"))

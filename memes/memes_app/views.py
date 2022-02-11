@@ -90,10 +90,10 @@ class FreshMemeView(ListView):
         if sort_method == "best":
             data = data.order_by("-karma")
         elif sort_method == "best12":
-            time_delta = datetime.now() - timedelta(hours=12)
+            time_delta = timezone.now() - timedelta(hours=12)
             data = data.order_by("-karma").filter(date_created__gte=time_delta)
         elif sort_method == "best72":
-            time_delta = datetime.now() - timedelta(days=3)
+            time_delta = timezone.now() - timedelta(days=3)
             data = data.order_by("-karma").filter(date_created__gte=time_delta)
         else:   # sort_method == "new":
             data = data.order_by("-date_created")
@@ -119,7 +119,6 @@ class FreshMemeView(ListView):
         return context
 
 
-# TODO: create category view
 class CategoryView(ListView):
     model = Meme
     paginate_by = 8
@@ -127,7 +126,39 @@ class CategoryView(ListView):
     context_object_name = "memes"
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        print(self.kwargs["category"])
+        context = super(CategoryView, self).get_context_data()
+        context["sort_methods"] = [("new", "New"), ("best", "Best"), ("best12", "Best 12h"), ("best72", "Best 72h")]
+        return context
+
+    def get_queryset(self):
+        """Get memes from chosen category"""
+        category = get_object_or_404(Category, slug__iexact=self.kwargs["category"])    #getting category
+        if not self.request.user.is_authenticated and not category.public:
+            raise Http404()     #raise 404 if category shouldnt be visible for anonumous users
+
+        data = self.model.objects.filter(accepted=True, hidden=False, category=category)    #getting base memes list
+
+        sort_method = self.request.GET.get("sort", "new")
+        if sort_method == "best":
+            data = data.order_by("-karma")
+        elif sort_method == "best12":
+            time_delta = timezone.now() - timedelta(hours=12)
+            data = data.order_by("-karma").filter(date_accepted__gte=time_delta)
+        elif sort_method == "best72":
+            time_delta = timezone.now() - timedelta(days=3)
+            data = data.order_by("-karma").filter(date_accepted__gte=time_delta)
+        else:   # sort_method == "new":
+            data = data.order_by("-date_accepted")
+
+        # adding information to indicate if user has given a karma point to the meme
+        user = get_user(self.request)
+        if self.request.user.is_authenticated:
+            for k in data:
+                k.karma_given = k.is_karma_given(user)
+        else:
+            for k in data:
+                k.karma_given = False
+        return data
 
 class MemeAdd(View):
     @method_decorator(login_required)
