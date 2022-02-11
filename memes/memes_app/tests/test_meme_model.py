@@ -1,13 +1,10 @@
-from django import urls
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.http import response
 from django.test import TestCase
 
 # Create your tests here.
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from pathlib import Path
 
 from django.utils import timezone
 from memes_app.models import Meme
@@ -31,7 +28,7 @@ class TestMemeModel(TestCase):
             new_meme.save()
 
     def test_model_edit_save(self):
-        '''Just checking if meme object saving works'''
+        """Just checking if meme object saving works"""
         memes = Meme.objects.all()
         for k in memes:
             k.accepted = True
@@ -41,7 +38,7 @@ class TestMemeModel(TestCase):
             self.assertEqual(k.accepted, True)
     
     def test_model_edit_save2(self):
-        '''Just checking if meme object saving works'''
+        """Just checking if meme object saving works"""
         memes = Meme.objects.all()
         for k in range(len(memes)):
             memes[k].accepted = True
@@ -51,7 +48,7 @@ class TestMemeModel(TestCase):
             self.assertEqual(k.accepted, True)
 
     def test_model_edit_save3(self):
-        '''Just checking if meme object saving works'''
+        """Just checking if meme object saving works"""
         memes = Meme.objects.all()
         for k in range(len(memes)):
             memes[k].accepted = True
@@ -86,10 +83,10 @@ class TestMemeModelVisibilityChange(TestCase):
 
 
     def test_visibility_change_superuser(self):
-        '''Check if superuser can change visibility'''
+        """Check if superuser can change visibility"""
         self.client.login(**self.superuser_data)
 
-        messages = ["Succesfully hidden meme", "Succesfully set meme visible"]
+        messages = ["Successfully hidden meme", "Successfully set meme visible"]
         memes = Meme.objects.all()
         for m in memes:
             self.assertEqual(m.hidden, False)
@@ -106,7 +103,7 @@ class TestMemeModelVisibilityChange(TestCase):
 
 
     def test_visibility_change_normal_user(self):
-        '''Check if normal can change visibility'''
+        """Check if normal can change visibility"""
         self.client.login(**self.user_data)
 
         memes = Meme.objects.all()
@@ -124,7 +121,7 @@ class TestMemeModelVisibilityChange(TestCase):
 
 
     def test_visibility_change_anonymous(self):
-        '''Check if anonymous can change visibility'''
+        """Check if anonymous can change visibility"""
 
         memes = Meme.objects.all()
         for m in memes:
@@ -166,10 +163,10 @@ class TestMemeModelAcceptanceChange(TestCase):
             new_meme.save()
 
     def test_acceptance_change_superuser(self):
-        '''Check if superuser can change acceptance'''
+        """Check if superuser can change acceptance"""
         self.client.login(**self.superuser_data)
 
-        messages = ["Succesfully reversed meme acceptance", "Succesfully accepted meme"]
+        messages = ["Successfully reversed meme acceptance", "Successfully accepted meme"]
         memes = Meme.objects.all()
         for m in memes:
             self.assertEqual(m.accepted, False)
@@ -186,7 +183,7 @@ class TestMemeModelAcceptanceChange(TestCase):
             self.assertEqual(m.accepted, False)
 
     def test_acceptance_change_normal_user(self):
-        '''Check if normal can change acceptance'''
+        """Check if normal can change acceptance"""
         self.client.login(**self.user_data)
 
         memes = Meme.objects.all()
@@ -210,7 +207,7 @@ class TestMemeModelAcceptanceChange(TestCase):
 
 
     def test_acceptance_change_anonymous_user(self):
-        '''Check if anonymous can change acceptance'''
+        """Check if anonymous can change acceptance"""
         memes = Meme.objects.all()
         for m in memes:
             self.assertEqual(m.accepted, False)

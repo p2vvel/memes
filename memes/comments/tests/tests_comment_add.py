@@ -48,7 +48,7 @@ class TestCommentsAdd(TestCase):
         for k, m in enumerate(memes):
             response = self.client.post(reverse("add_meme_comment", args=(m.pk,)), {"content": "Meme comment %s" % k})
             self.assertEqual(response.status_code, 200)
-            self.assertJSONEqual(response.content, {"success": True, "msg": "Succesfully added new comment"})
+            self.assertJSONEqual(response.content, {"success": True, "msg": "Successfully added new comment"})
             self.assertEqual(k + 1, MemeComment.objects.all().count())
             comment = MemeComment.objects.get(comment_object=m.pk)
             self.assertEqual(comment.content, "Meme comment %s" % k)
@@ -113,7 +113,7 @@ class TestReplyCommentAdd(TestCase):
         for k, c in enumerate(comments):
             response = self.client.post(reverse("add_reply_comment", args=(c.pk,)), {"content": "Reply comment %s :)" % k})
             self.assertEqual(response.status_code, 200)
-            self.assertJSONEqual(response.content, {"success": True, "msg": "Succesfully added new comment"})
+            self.assertJSONEqual(response.content, {"success": True, "msg": "Successfully added new comment"})
             new_comment = MemeComment.objects.all().order_by("-date_created")[0]
             self.assertEqual(new_comment.content, "Reply comment %s :)" % k)
             self.assertEqual(new_comment.original_poster, get_user(self.client))
@@ -141,7 +141,7 @@ class TestReplyCommentAdd(TestCase):
         for k in range(6):
             response = self.client.post(reverse("add_reply_comment", args=(comments[-1].pk, )), {"content": "First level"})
             self.assertEqual(response.status_code, 200)
-            self.assertJSONEqual(response.content, {"success": True, "msg": "Succesfully added new comment"})
+            self.assertJSONEqual(response.content, {"success": True, "msg": "Successfully added new comment"})
             comments.append(MemeComment.objects.all().order_by("-date_created")[0])
             self.assertEqual(comments[-1].parent_comment, comment)
 

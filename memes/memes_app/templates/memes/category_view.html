@@ -13,7 +13,7 @@
     <script src="{% static "js/karma_change.js" %}"></script>
 
 
-    <h1>Fresh memes</h1>
+    <h1>Category memes</h1>
     {% csrf_token %}
 
 
@@ -30,35 +30,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col">
-                {% with view.request.GET|get_list:"category" as my_categories %}
-                    <div class="form-check form-check-inline">
-                        {% if "none" in my_categories %}
-                            <input class="form-check-input" type="checkbox" id="category_none" value="none"
-                                   name="category"
-                                   checked>
-                        {% else %}
-                            <input class="form-check-input" type="checkbox" id="category_none" value="none"
-                                   name="category">
-                        {% endif %}
-                        <label class="form-check-label" for="category_none">-</label>
-                    </div>
 
-                    {% for category in categories %}
-                        <div class="form-check form-check-inline">
-                            {% if category.slug in my_categories %}
-                                <input class="form-check-input" type="checkbox" id="category_{{ category.slug }}"
-                                       value="{{ category.slug }}" name="category" checked>
-                            {% else %}
-                                <input class="form-check-input" type="checkbox" id="category_{{ category.slug }}"
-                                       value="{{ category.slug }}" name="category">
-                            {% endif %}
-                            <label class="form-check-label"
-                                   for="category_{{ category.slug }}">{{ category.name }}</label>
-                        </div>
-                    {% endfor %}
-                {% endwith %}
-            </div>
             <div class="col">
                 <input type="submit" value="Filter" class="btn btn-primary">
             </div>

@@ -1,12 +1,10 @@
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.http import response
 from django.test import TestCase
 
 # Create your tests here.
-from django.contrib.auth import get_user, get_user_model
+from django.contrib.auth import get_user_model
 from django.urls import reverse
-from pathlib import Path
 
 from memes_app.models import Meme
 
@@ -29,21 +27,21 @@ class TestFreshView(TestCase):
             new_meme.save()
 
     def test_memes_fresh_index(self):
-        '''Do memes appear in fresh view?'''
+        """Do memes appear in fresh view?"""
         response = self.client.get(reverse("fresh_index"))
         memes = Meme.objects.all().order_by("-date_created")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(response.context["memes"], memes[:8])
 
     def test_memes_fresh_pagination(self):
-        '''Do memes appear in fresh view?'''
+        """Do memes appear in fresh view?"""
         response = self.client.get(reverse("fresh_memes", args=(2,)))
         memes = Meme.objects.all().order_by("-date_created")
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(response.context["memes"], memes[8:])    
 
     def test_memes_fresh_pagination_exclude_accepted(self):
-        '''Do memes appear in fresh view?'''
+        """Do memes appear in fresh view?"""
         memes = Meme.objects.all().order_by("-date_created")
        
         for k in memes[:2]:
@@ -55,7 +53,7 @@ class TestFreshView(TestCase):
         self.assertCountEqual(response.context["memes"], memes[2:])
 
     def test_memes_fresh_check_hidden(self):
-        '''Do hidden memes appear in fresh view?'''
+        """Do hidden memes appear in fresh view?"""
         memes = Meme.objects.all().order_by("-date_created")
 
         for k in memes[5:]:
@@ -67,8 +65,8 @@ class TestFreshView(TestCase):
         self.assertCountEqual(memes[:5], response.context["memes"])
         
     def test_fresh_overflow_page(self):
-        '''Check what happens if someone tries to open too high page'''
-        response = self.client.get(reverse("fresh_memes", args=(100,))) #trying to open 100th page
+        """Check what happens if someone tries to open too high page"""
+        response = self.client.get(reverse("fresh_memes", args=(100,)))     # trying to open 100th page
 
         self.assertEqual(response.status_code, 404)
 
