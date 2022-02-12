@@ -15,33 +15,6 @@ from comments.forms import MemeCommentForm
 from django.db.models import Q
 
 
-# main site with accepted memes
-class MainMemeView(ListView):
-    model = Meme
-    paginate_by = 8
-    template_name = "memes/main_view.html"
-    context_object_name = "memes"
-    ordering = ["-date_accepted"]
-
-    def get_queryset(self):
-        user = get_user(self.request)
-        data = super().get_queryset()
-        data = data.filter(accepted=True, hidden=False)
-        if self.request.user.is_authenticated:
-            for k in data:
-                k.karma_given = k.is_karma_given(user)
-        else:
-            for k in data:
-                k.karma_given = False
-
-        return data
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["form"] = MemeForm()
-        return context
-
-
 class NewMainMemeView(ListView):
     model = Meme
     paginate_by = 8

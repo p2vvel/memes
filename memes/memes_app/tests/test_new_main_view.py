@@ -33,18 +33,18 @@ class TestNewMainView(TestCase):
     def test_new_main_view(self):
         """Does new main view even work?"""
         for k in Category.objects.all():
-            response = self.client.get(reverse("new_index", args=(k.slug,)))
+            response = self.client.get(reverse("index", args=(k.slug,)))
             self.assertEqual(response.status_code, 200)
 
     def test_category_view_anonymous(self):
         """Does anonymous user can open main view?"""
-        response = self.client.get(reverse("new_index"))
+        response = self.client.get(reverse("index"))
         self.assertEqual(response.status_code, 200)
 
     def test_category_view_logged(self):
         """Logged user can see main view"""
         self.client.login(**self.new_user_data)
-        response = self.client.get(reverse("new_index"))
+        response = self.client.get(reverse("index"))
         self.assertEqual(response.status_code, 200)
 
     def test_category_unaccepted(self):
@@ -56,11 +56,11 @@ class TestNewMainView(TestCase):
             temp.accepted = False
             temp.save()
 
-        response = self.client.get(reverse("new_index"))
+        response = self.client.get(reverse("index"))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([k.pk for k in response.context["memes"]], [])
 
-        response = self.client.get(f'{reverse("new_memes", args=(2,))}')
+        response = self.client.get(f'{reverse("memes", args=(2,))}')
         self.assertEqual(response.status_code, 404)
 
     def test_memes_in_right_category(self):
@@ -76,7 +76,7 @@ class TestNewMainView(TestCase):
             temp.accepted = False
             temp.save()
 
-        response = self.client.get(reverse("new_index"))
+        response = self.client.get(reverse("index"))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([k.pk for k in response.context["memes"]], memes_id[:5])
 
@@ -104,11 +104,11 @@ class TestCategoriesViewSort(TestCase):
             temp.date_accepted = timezone.now() - datetime.timedelta(hours=h)
             temp.save()
 
-        response = self.client.get(reverse("new_index"))
+        response = self.client.get(reverse("index"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[:8])
 
-        response = self.client.get(f'{reverse("new_memes", args=(2,))}')
+        response = self.client.get(f'{reverse("memes", args=(2,))}')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[8:])
 
@@ -121,11 +121,11 @@ class TestCategoriesViewSort(TestCase):
             temp.date_accepted = timezone.now() - datetime.timedelta(hours=h)
             temp.save()
 
-        response = self.client.get(f'{reverse("new_index")}?sort=new')
+        response = self.client.get(f'{reverse("index")}?sort=new')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[:8])
 
-        response = self.client.get(f'{reverse("new_memes", args=(2,))}?sort=new')
+        response = self.client.get(f'{reverse("memes", args=(2,))}?sort=new')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[8:])
 
@@ -138,11 +138,11 @@ class TestCategoriesViewSort(TestCase):
             temp.karma = 100 - k
             temp.save()
 
-        response = self.client.get(f'{reverse("new_index")}?sort=best')
+        response = self.client.get(f'{reverse("index")}?sort=best')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[:8])
 
-        response = self.client.get(f'{reverse("new_memes", args=(2,))}?sort=best')
+        response = self.client.get(f'{reverse("memes", args=(2,))}?sort=best')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[8:])
 
@@ -165,11 +165,11 @@ class TestCategoriesViewSort(TestCase):
             temp.karma = 100 - k
             temp.save()
 
-        response = self.client.get(f'{reverse("new_index")}?sort=best12')
+        response = self.client.get(f'{reverse("index")}?sort=best12')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[3:])
 
-        response = self.client.get(f'{reverse("new_memes", args=(2,))}?sort=best12')
+        response = self.client.get(f'{reverse("memes", args=(2,))}?sort=best12')
         self.assertEqual(response.status_code, 404)
 
     def test_sorting_best_72h(self):
@@ -192,10 +192,10 @@ class TestCategoriesViewSort(TestCase):
             temp.karma = 100 - k
             temp.save()
 
-        response = self.client.get(f'{reverse("new_index")}?sort=best72')
+        response = self.client.get(f'{reverse("index")}?sort=best72')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[3:])
 
-        response = self.client.get(f'{reverse("new_memes", args=(2,))}?sort=best72')
+        response = self.client.get(f'{reverse("memes", args=(2,))}?sort=best72')
         self.assertEqual(response.status_code, 404)
 
