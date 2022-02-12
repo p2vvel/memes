@@ -18,7 +18,7 @@ from django.db.models import Q
 class NewMainMemeView(ListView):
     model = Meme
     paginate_by = 8
-    template_name = "memes/category_view.html"
+    template_name = "memes/main_view.html"
     context_object_name = "memes"
 
     def get_context_data(self, *, object_list=None, **kwargs):
@@ -32,15 +32,15 @@ class NewMainMemeView(ListView):
 
         sort_method = self.request.GET.get("sort", "new")
         if sort_method == "best":
-            data = data.order_by("-karma")
+            data = data.order_by("-karma", "-date_accepted")
         elif sort_method == "best12":
             time_delta = timezone.now() - timedelta(hours=12)
-            data = data.order_by("-karma").filter(date_accepted__gte=time_delta)
+            data = data.order_by("-karma", "-date_accepted").filter(date_accepted__gte=time_delta)
         elif sort_method == "best72":
             time_delta = timezone.now() - timedelta(days=3)
-            data = data.order_by("-karma").filter(date_accepted__gte=time_delta)
+            data = data.order_by("-karma", "-date_accepted").filter(date_accepted__gte=time_delta)
         else:   # sort_method == "new":
-            data = data.order_by("-date_accepted")
+            data = data.order_by("-date_accepted", "-karma")
 
         # adding information to indicate if user has given a karma point to the meme
         user = get_user(self.request)
@@ -84,15 +84,15 @@ class FreshMemeView(ListView):
 
         sort_method = self.request.GET.get("sort", "new")
         if sort_method == "best":
-            data = data.order_by("-karma")
+            data = data.order_by("-karma", "-date_created")
         elif sort_method == "best12":
             time_delta = timezone.now() - timedelta(hours=12)
-            data = data.order_by("-karma").filter(date_created__gte=time_delta)
+            data = data.order_by("-karma", "-date_created").filter(date_created__gte=time_delta)
         elif sort_method == "best72":
             time_delta = timezone.now() - timedelta(days=3)
-            data = data.order_by("-karma").filter(date_created__gte=time_delta)
+            data = data.order_by("-karma", "-date_created").filter(date_created__gte=time_delta)
         else:   # sort_method == "new":
-            data = data.order_by("-date_created")
+            data = data.order_by("-date_created", "-karma")
 
         # adding information to indicate if user has given a karma point to the meme
         user = get_user(self.request)
@@ -136,15 +136,15 @@ class CategoryView(ListView):
 
         sort_method = self.request.GET.get("sort", "new")
         if sort_method == "best":
-            data = data.order_by("-karma")
+            data = data.order_by("-karma", "-date_accepted")
         elif sort_method == "best12":
             time_delta = timezone.now() - timedelta(hours=12)
-            data = data.order_by("-karma").filter(date_accepted__gte=time_delta)
+            data = data.order_by("-karma", "-date_accepted").filter(date_accepted__gte=time_delta)
         elif sort_method == "best72":
             time_delta = timezone.now() - timedelta(days=3)
-            data = data.order_by("-karma").filter(date_accepted__gte=time_delta)
+            data = data.order_by("-karma", "-date_accepted").filter(date_accepted__gte=time_delta)
         else:   # sort_method == "new":
-            data = data.order_by("-date_accepted")
+            data = data.order_by("-date_accepted", "-karma")
 
         # adding information to indicate if user has given a karma point to the meme
         user = get_user(self.request)

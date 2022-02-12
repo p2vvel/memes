@@ -37,7 +37,7 @@ class TestCategoriesView(TestCase):
     def test_category_view(self):
         """Does category view even work?"""
         for k in Category.objects.all():
-            response = self.client.get(reverse("category_view", args=(k.slug,)))
+            response = self.client.get(reverse("category_index", args=(k.slug,)))
             self.assertEqual(response.status_code, 200)
 
     def test_category_view_anonymous(self):
@@ -48,7 +48,7 @@ class TestCategoriesView(TestCase):
             c.save()
 
         for k in Category.objects.all():
-            response = self.client.get(reverse("category_view", args=(k.slug,)))
+            response = self.client.get(reverse("category_index", args=(k.slug,)))
             self.assertEqual(response.status_code, 404)
 
     def test_category_view_logged(self):
@@ -67,17 +67,17 @@ class TestCategoriesView(TestCase):
             temp.category = f1
             temp.save()
 
-        response = self.client.get(reverse("category_view", args=(paws.slug,)))
+        response = self.client.get(reverse("category_index", args=(paws.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([k.pk for k in response.context["memes"]], memes_id[:5])
 
-        response = self.client.get(reverse("category_view", args=(f1.slug,)))
+        response = self.client.get(reverse("category_index", args=(f1.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([k.pk for k in response.context["memes"]], memes_id[5:])
 
     def test_category_bad_slug(self):
         """Bad category in url should raise 404"""
-        response = self.client.get(reverse("category_view", args=("eminem",)))
+        response = self.client.get(reverse("category_index", args=("eminem",)))
         self.assertEqual(response.status_code, 404)
 
     def test_category_memes(self):
@@ -89,10 +89,10 @@ class TestCategoriesView(TestCase):
             temp = m
             temp.category = paws
             temp.save()
-        response = self.client.get(reverse("category_view", args=(paws.slug,)))
+        response = self.client.get(reverse("category_index", args=(paws.slug,)))
         self.assertCountEqual([k.pk for k in response.context["memes"]], memes_id[:8])
         self.assertEqual(response.status_code, 200)
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?page=2')
+        response = self.client.get(f'{reverse("category_view", args=(paws.slug, 2))}')
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([k.pk for k in response.context["memes"]], memes_id[8:])
 
@@ -114,11 +114,11 @@ class TestCategoriesView(TestCase):
             temp.category = f1
             temp.save()
 
-        response = self.client.get(reverse("category_view", args=(paws.slug,)))
+        response = self.client.get(reverse("category_index", args=(paws.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([k.pk for k in response.context["memes"]], [])
 
-        response = self.client.get(reverse("category_view", args=(f1.slug,)))
+        response = self.client.get(reverse("category_index", args=(f1.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([k.pk for k in response.context["memes"]], [])
 
@@ -137,11 +137,11 @@ class TestCategoriesViewSort(TestCase):
             temp.date_accepted = timezone.now() - datetime.timedelta(hours=h)
             temp.save()
 
-        response = self.client.get(reverse("category_view", args=(paws.slug,)))
+        response = self.client.get(reverse("category_index", args=(paws.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[:8])
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?page=2')
+        response = self.client.get(f'{reverse("category_view", args=(paws.slug, 2))}')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[8:])
 
@@ -156,11 +156,11 @@ class TestCategoriesViewSort(TestCase):
             temp.date_accepted = timezone.now() - datetime.timedelta(hours=h)
             temp.save()
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?sort=new')
+        response = self.client.get(f'{reverse("category_index", args=(paws.slug,))}?sort=new')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[:8])
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?page=2&sort=new')
+        response = self.client.get(f'{reverse("category_view", args=(paws.slug, 2))}?sort=new')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[8:])
 
@@ -175,11 +175,11 @@ class TestCategoriesViewSort(TestCase):
             temp.karma = 100 - k
             temp.save()
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?sort=best')
+        response = self.client.get(f'{reverse("category_index", args=(paws.slug,))}?sort=best')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[:8])
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?page=2&sort=best')
+        response = self.client.get(f'{reverse("category_view", args=(paws.slug, 2))}?&sort=best')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[8:])
 
@@ -205,11 +205,11 @@ class TestCategoriesViewSort(TestCase):
             temp.karma = 100 - k
             temp.save()
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?sort=best12')
+        response = self.client.get(f'{reverse("category_index", args=(paws.slug,))}?sort=best12')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[3:])
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?page=2&sort=best12')
+        response = self.client.get(f'{reverse("category_view", args=(paws.slug, 2))}?&sort=best12')
         self.assertEqual(response.status_code, 404)
 
 
@@ -235,10 +235,10 @@ class TestCategoriesViewSort(TestCase):
             temp.karma = 100 - k
             temp.save()
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?sort=best72')
+        response = self.client.get(f'{reverse("category_index", args=(paws.slug,))}?sort=best72')
         self.assertEqual(response.status_code, 200)
         self.assertEqual([k.pk for k in response.context["memes"]], memes_id[3:])
 
-        response = self.client.get(f'{reverse("category_view", args=(paws.slug,))}?page=2&sort=best72')
+        response = self.client.get(f'{reverse("category_view", args=(paws.slug, 2))}?sort=best72')
         self.assertEqual(response.status_code, 404)
 

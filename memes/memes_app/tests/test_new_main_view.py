@@ -80,11 +80,11 @@ class TestNewMainView(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual([k.pk for k in response.context["memes"]], memes_id[:5])
 
-        response = self.client.get(reverse("category_view", args=(f1.slug,)))
+        response = self.client.get(reverse("category_index", args=(f1.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(response.context["memes"], [])
 
-        response = self.client.get(reverse("category_view", args=(paws.slug,)))
+        response = self.client.get(reverse("category_index", args=(paws.slug,)))
         self.assertEqual(response.status_code, 200)
         self.assertCountEqual(response.context["memes"], [])
 

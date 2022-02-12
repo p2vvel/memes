@@ -12,7 +12,8 @@ urlpatterns = [
     path("fresh/page/<int:page>/", FreshMemeView.as_view(), name="fresh_memes"),
 
 
-    path("category/<slug:category>/", CategoryView.as_view(), name="category_view"),
+    path("category/<slug:category>/", CategoryView.as_view(), name="category_index"),
+    path("category/<slug:category>/page/<int:page>/", CategoryView.as_view(), name="category_view"),
     # path("page/<int:page>/", MainMemeView.as_view(), name="memes"),
 
 

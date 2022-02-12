@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-
-
 {% block content %}
     {% load static %}
     {% load get_list %}
@@ -16,8 +14,9 @@
     <h1>Category memes</h1>
     {% csrf_token %}
 
+    {{ request.URL }}
 
-    <form method="GET" action={% url "fresh_index" %}>
+    <form method="GET" action={% url "category_index" category=request.resolver_match.kwargs.category %}>
         <div class="row">
             <div class="col">
                 <select class="form-select" name="sort" onchange="submit()">
@@ -29,10 +28,6 @@
                         {% endif %}
                     {% endfor %}
                 </select>
-            </div>
-
-            <div class="col">
-                <input type="submit" value="Filter" class="btn btn-primary">
             </div>
         </div>
     </form>
@@ -115,24 +110,24 @@
             <div class="col d-flex justify-content-center my-3">
                 <nav aria-label="Page navigation example">
                     <ul class="pagination">
-                        {% url "fresh_memes" page=1 as first_page %}
+                        {% url "category_view" category=request.resolver_match.kwargs.category page=1 as first_page %}
                         <li class="page-item"><a class="page-link" href=
                                 {{ first_page|preserve_filters:view.request.GET }}>First</a></li>
 
                         {% for i in page_obj.paginator.page_range %}
                             {% if i == page_obj.number %}
-                                {% url "fresh_memes" page=i as next_page %}
+                                {% url "category_view" category=request.resolver_match.kwargs.category page=i as next_page %}
                                 <li class="page-item active"><a class="page-link"
                                                                 href=
                                         {{ next_page|preserve_filters:view.request.GET }}>{{ i }}</a></li>
                             {% elif i >= page_obj.number|add:-3 and i <= page_obj.number|add:3 %}
-                                {% url "fresh_memes" page=i as next_page %}
+                                {% url "category_view" category=request.resolver_match.kwargs.category page=i as next_page %}
                                 <li class="page-item"><a class="page-link"
                                                          href=
                                         {{ next_page|preserve_filters:view.request.GET }}>{{ i }}</a></li>
                             {% endif %}
                         {% endfor %}
-                        {% url "fresh_memes" page=page_obj.paginator.num_pages as last_page %}
+                        {% url "category_view" category=request.resolver_match.kwargs.category page=page_obj.paginator.num_pages as last_page %}
                         <li class="page-item"><a class="page-link"
                                                  href={{ last_page|preserve_filters:view.request.GET }}>Last</a>
                         </li>
