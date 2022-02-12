@@ -42,20 +42,43 @@ class MainMemeView(ListView):
         return context
 
 
-class MemeView(DetailView):
+class NewMainMemeView(ListView):
     model = Meme
-    context_object_name = "meme"
-    template_name = "memes/meme_view.html"
+    paginate_by = 8
+    template_name = "memes/category_view.html"
+    context_object_name = "memes"
 
-    def get_context_data(self, **kwargs):
-        user = get_user(self.request)
-        context = super().get_context_data(**kwargs)
-        if self.request.user.is_authenticated:
-            context["meme"].karma_given = context["meme"].is_karma_given(user)
-        else:
-            context["meme"].karma_given = False
-        context["form"] = MemeCommentForm()
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super(NewMainMemeView, self).get_context_data()
+        context["sort_methods"] = [("new", "New"), ("best", "Best"), ("best12", "Best 12h"), ("best72", "Best 72h")]
         return context
+
+    def get_queryset(self):
+        """Get memes without category"""
+        data = self.model.objects.filter(accepted=True, hidden=False, category=None)    #getting base memes list
+
+        sort_method = self.request.GET.get("sort", "new")
+        if sort_method == "best":
+            data = data.order_by("-karma")
+        elif sort_method == "best12":
+            time_delta = timezone.now() - timedelta(hours=12)
+            data = data.order_by("-karma").filter(date_accepted__gte=time_delta)
+        elif sort_method == "best72":
+            time_delta = timezone.now() - timedelta(days=3)
+            data = data.order_by("-karma").filter(date_accepted__gte=time_delta)
+        else:   # sort_method == "new":
+            data = data.order_by("-date_accepted")
+
+        # adding information to indicate if user has given a karma point to the meme
+        user = get_user(self.request)
+        if self.request.user.is_authenticated:
+            for k in data:
+                k.karma_given = k.is_karma_given(user)
+        else:
+            for k in data:
+                k.karma_given = False
+        return data
+
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -159,6 +182,23 @@ class CategoryView(ListView):
             for k in data:
                 k.karma_given = False
         return data
+
+
+class MemeView(DetailView):
+    model = Meme
+    context_object_name = "meme"
+    template_name = "memes/meme_view.html"
+
+    def get_context_data(self, **kwargs):
+        user = get_user(self.request)
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            context["meme"].karma_given = context["meme"].is_karma_given(user)
+        else:
+            context["meme"].karma_given = False
+        context["form"] = MemeCommentForm()
+        return context
+
 
 class MemeAdd(View):
     @method_decorator(login_required)
