@@ -20,7 +20,10 @@ class MemeCommentAdmin(admin.ModelAdmin):
     save_on_top = True
 
     def get_view_on_site_url(self, comment: MemeComment) -> str:
-        return reverse("meme_view", args=(comment.comment_object.pk,))
+        if comment:
+            return reverse("meme_view", args=(comment.comment_object.pk,))
+        else:
+            return ''
 
     def parent_comment_content(self, comment: MemeComment) -> safestring.SafeString:
         if comment.parent_comment:

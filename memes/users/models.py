@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 import os
 import uuid
 
-from PIL import Image
+from PIL import Image, ImageOps
 from io import BytesIO
 from django.core.files.base import File
 
@@ -100,7 +100,8 @@ class MyUser(AbstractBaseUser):
         # old_profile_img is set in signals.py at pre_save
         if self.profile_img and self.profile_img != self.old_profile_img:
             avatar = Image.open(self.profile_img).convert("RGB")
-            avatar.thumbnail((200, 200))
+            # avatar.thumbnail((200, 200))
+            avatar = ImageOps.fit(avatar, (200, 200), Image.ANTIALIAS)
             buffer = BytesIO()
             avatar.save(buffer, name=self.profile_img.name, format="JPEG")
             self.profile_img = File(buffer, name = self.profile_img.name)

@@ -69,7 +69,9 @@ class MyUserAdmin(UserAdmin):
     save_on_top = True
 
     def get_view_on_site_url(self, user: MyUser) -> str:
-        return reverse("profile", args=(user.login,))
-
+        if user:
+            return reverse("profile", args=(user.login,))
+        else:
+            return ''
 
 admin.site.register(MyUser, MyUserAdmin)

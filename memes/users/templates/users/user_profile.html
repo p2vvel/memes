@@ -1,61 +1,66 @@
 {% extends 'base.html' %}
 
 
+{% load static %}
 
 {% block content %}
 
 
 
-<script>
-window.addEventListener('load', () =>{
+    <script>
+        window.addEventListener('load', () => {
 
-let url ="{% url 'user_karma_change' login=profile.login %}";
-let karma_button = document.querySelector("#karma_button");
+            let url = "{% url 'user_karma_change' login=profile.login %}";
+            let karma_button = document.querySelector("#karma_button");
 
-karma_button.addEventListener("click", () => {
-    let request = new Request(url, {headers: {"X-CSRFToken": "{{csrf_token}}"}});
-    fetch(request, {
-        method: "POST",
-        mode: "same-origin"
-    })
-    .then(response => {
-        if(response.ok)
-            return response.json();
-        else
-            throw Error(response.statusText);
-    })
-    .then(data => {
-        if (data.success)
-            karma_button.innerText = `Karma ${data.karma}`;
-        else
-            throw Error("Data NOT OK");
-    })
-    .catch(error => {
-        console.log(error.message);
-    });
+            karma_button.addEventListener("click", () => {
+                let request = new Request(url, {headers: {"X-CSRFToken": "{{csrf_token}}"}});
+                fetch(request, {
+                    method: "POST",
+                    mode: "same-origin"
+                })
+                    .then(response => {
+                        if (response.ok)
+                            return response.json();
+                        else
+                            throw Error(response.statusText);
+                    })
+                    .then(data => {
+                        if (data.success)
+                            karma_button.innerText = `Karma ${data.karma}`;
+                        else
+                            throw Error("Data NOT OK");
+                    })
+                    .catch(error => {
+                        console.log(error.message);
+                    });
 
-    });
-});
-</script>
+            });
+        });
+    </script>
 
 
-<h3>Your profile</h3>
 
-<p>{{profile.login}}</p>
-
-<p>{{profile.email}}</p>
-
-<p>{{profile.description}}</p>
-
-{% if profile.profile_img %}
-    <img src={{profile.profile_img.url}} alt="{{profile.login}} profile pic">
-{% endif %}
-
-{% if user.is_authenticated %}
-    {% if profile.pk != user.pk %}
-        <button id="karma_button">Karma {{profile.karma}}</button>
-    {% endif %}
-{% endif %}
+    <div class="card my-4">
+        <div class="card-body d-flex">
+            <div>
+                {% if profile.profile_img %}
+                    <img class="image-responsive rounded m-2" style="max-width: 100px; max-height: 100px;" src="{{ profile.profile_img.url }}" alt="{{ profile.login }} avatar">
+                {% else %}
+                    <img class="image-responsive rounded m-2" style="max-width: 100px; max-height: 100px;" src="{% static "images/watermark.png"  %}" alt="{{ profile.login }} avatar">
+                {% endif %}
+            </div>
+            <div>
+                <h5 class="card-title">{{ profile.login }}</h5>
+                <p class="card-text text-secondary">{{ profile.description }}</p>
+                {% if user.is_authenticated %}
+                    {% if profile.pk != user.pk %}
+                        <button id="karma_button" class="btn btn-primary">Karma {{ profile.karma }}</button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
 
 {% endblock content %}

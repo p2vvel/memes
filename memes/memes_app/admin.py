@@ -46,7 +46,10 @@ class MemeAdmin(admin.ModelAdmin):
     meme.allow_tags = True
 
     def get_view_on_site_url(self, m: Meme) -> str:
-        return reverse("meme_view", args=(m.pk,))
+        if m:
+            return reverse("meme_view", args=(m.pk,))
+        else:
+            return ''
 
 
 admin.site.register(Meme, MemeAdmin)
