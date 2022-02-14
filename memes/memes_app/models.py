@@ -40,6 +40,9 @@ class Category(models.Model):
     def __str__(self):
         return str.capitalize(self.name)
 
+    class Meta:
+        verbose_name_plural = "Categories"
+
 
 class Meme(models.Model):
     title           = models.CharField(max_length=255, blank=False, null=False)
@@ -55,10 +58,14 @@ class Meme(models.Model):
 
     original_poster = models.ForeignKey(to=get_user_model(), default=None, null=True, on_delete=models.SET_NULL)
 
+    def __str__(self):
+        return self.title
+
     def save(self, *args, **kwargs) -> None:
         """Have to remember about compressing image while saving it"""
         self.clean()    # clean isn't automatically invoked when calling save on model instance!!!!
 
+        # TODO: date_accepted at save!
         # compressed image will be saved only on adding
         if self._state.adding:
             self.normal_image = get_normal_image(self.original_image)
