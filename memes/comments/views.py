@@ -18,7 +18,7 @@ import json
 
 #TODO: limit comments adding to avoid spam
 class AddMemeComment(View):
-    '''Add comment to meme'''
+    """Add comment to meme"""
     def post(self, request, pk):
         if request.method == "POST":
             if request.user.is_authenticated:
@@ -39,9 +39,8 @@ class AddMemeComment(View):
             raise Http404()
 
 
-
 class AddReplyComment(View):
-    '''Add comment replying to another comment'''
+    """Add comment replying to another comment"""
     def post(self, request, pk):
         if request.method == "POST":
             if request.user.is_authenticated:
@@ -53,7 +52,7 @@ class AddReplyComment(View):
                     comment.original_poster = get_user(request)
                     comment.comment_object = parent_comment.comment_object
                     '''Comments replies has only 1 level of depth'''
-                    if parent_comment.parent_comment != None:
+                    if parent_comment.parent_comment is not None:
                         comment.parent_comment = parent_comment.parent_comment
                     else:
                         comment.parent_comment = parent_comment
@@ -66,24 +65,26 @@ class AddReplyComment(View):
         else:
             raise Http404()
 
+
 class GetMemeComments(View):
     def post(self, request, pk):
-        '''Returns all comments for the meme'''
+        """Returns all comments for the meme"""
         meme = get_object_or_404(Meme, pk=pk)
         sort = request.GET.get("sort", default="new")
 
+        base_comments = MemeComment.objects.filter(parent_comment=None, comment_object=meme)
         if sort == "best":
-            base_comments = MemeComment.objects.filter(parent_comment=None, comment_object=meme).order_by("-karma", "date_created")
-        else:   #if sort == "new"
-            base_comments = MemeComment.objects.filter(parent_comment=None, comment_object=meme).order_by("date_created", "-karma")
+            base_comments = base_comments.order_by("-karma", "-pk")       # best, newest
+        else:   # if sort == "new"
+            base_comments = base_comments.order_by("-pk", "-karma")       # newest, best
 
         comments_data = []
         for base_comm in base_comments:
             comments_data.append(base_comm)
-            for reply_comm in base_comm.memecomment_set.all().order_by("date_created", "-karma"):
+            # oldest, best
+            child_comments = base_comm.memecomment_set.order_by("pk", "-karma")
+            for reply_comm in child_comments:
                 comments_data.append(reply_comm)
-        
-
 
         serialized_comments = json.loads(serializers.serialize("json", comments_data,  use_natural_foreign_keys=True))
         
@@ -109,21 +110,21 @@ def change_meme_comment_karma(request, pk):
             positive = False if request.GET.get("positive") == "False" else True
 
             try:
-                #comment karma already exist
+                # comment karma already exist
                 given_karma = MemeCommentKarma.objects.get(user=user, comment=comment)
                 if positive == given_karma.positive:
-                    comment.karma += -1 if positive else 1  #if deleting positive comment, have to substract one karma point
+                    comment.karma += -1 if positive else 1  # if deleting positive comment, have to substract one karma point
                     given_karma.delete()
                     karma_given = 0
                 else:
-                    comment.karma += 2 if positive else -2   #adding karma with different sign means that you have to add or substract 2 (delete old karma and add news)
+                    comment.karma += 2 if positive else -2   # adding karma with different sign means that you have to add or substract 2 (delete old karma and add news)
                     given_karma.positive = not given_karma.positive
                     given_karma.save()
                     karma_given = 1 if positive else -1
                 comment.save()
                 msg =  "Successfully changed karma!"
             except MemeCommentKarma.DoesNotExist:
-                #meme wasnt given karma point by user
+                # meme wasn't given karma point by user
                 given_karma = MemeCommentKarma(user=user, comment=comment, positive=positive)
                 given_karma.save()
                 comment.karma += 1 if positive else -1
